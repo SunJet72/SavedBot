@@ -3,7 +3,7 @@ using SavedBot.Loggers;
 using SavedBot.Model;
 using System.Text;
 
-string token = "6378630596:AAFxOZrAGeg8I-OzwAh03_XcESf6komVD6U";
+string token = "Your token";
 
 ILogger logger = new ConsoleLogger();
 IModelContext context = new MockModelContext(logger);
