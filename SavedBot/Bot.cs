@@ -48,11 +48,18 @@ namespace SavedBot
         }
         private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken cancellationToken)
         {
+            try
+            {
             await (update.Type switch
             {
                 UpdateType.Message => HandleMessageAsync(update.Message),
                 UpdateType.InlineQuery => HandleInlineQueryAsync(update.InlineQuery)
             });
+        }
+            catch (Exception ex)
+            {
+                _logger.Log("Global Exception caught: " + ex.ToString());
+            }
         }
         private async Task HandleInlineQueryAsync(InlineQuery inlineQuery)
         {
@@ -74,7 +81,8 @@ namespace SavedBot
             for(int i = 0; i < searchResult.Count(); i++)
             {
                 //TODO: Implement less searches
-
+                try
+                {
                 if (_modelContext.FindFile(user.ChatId, searchResult[i]) is { } file)
                 {
                     inlineQueries[i] = (file.FileType switch
@@ -87,10 +95,12 @@ namespace SavedBot
                         MessageType.VideoNote => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
                         MessageType.Voice => new InlineQueryResultCachedVoice(searchResult[i], file.Id, searchResult[i]),
                         MessageType.Animation => new InlineQueryResultCachedGif(searchResult[i], file.Id)
-                    }) ;
+                        });
                 }
                 else if (_modelContext.FindText(user.ChatId, searchResult[i]) is { } text)
                     inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
+            }
+                catch (SavedMessageNotFoundException) { }
             }
             await _client.AnswerInlineQueryAsync(inlineQuery.Id, inlineQueries);
 
@@ -227,7 +237,7 @@ namespace SavedBot
             if (text is { })
             {
                 _logger.Log($"Received message from {chatId}: {text}");
-                if (text.StartsWith("/")) await HandleCommandAsync(chatId, userId, text);
+                if (text.StartsWith("/")) await HandleCommandAsync(chatId, text);
                 else
                 {
                     try
