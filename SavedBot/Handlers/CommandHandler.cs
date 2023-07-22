@@ -12,16 +12,14 @@ namespace SavedBot.Handlers
     public abstract class CommandHandler : ICommandHandler
     {
         protected IModelContext _modelContext;
-        protected ILogger _logger { get; private set; }
+        protected readonly ILogger _logger;
         public CommandHandler(IModelContext modelContext, ILogger logger)
         {
             _modelContext = modelContext;
             _logger = logger;
         }
 
-        public virtual void Handle(OngoingChat ongoingChat)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract void Handle(OngoingChat ongoingChat);
+        public abstract bool IsNamed(long chatId);
     }
 }

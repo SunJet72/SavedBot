@@ -1,4 +1,5 @@
 ﻿using SavedBot.Chat;
+using SavedBot.Chat.Add;
 using SavedBot.Exceptions;
 using SavedBot.Handlers;
 using SavedBot.Loggers;
@@ -10,12 +11,14 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SavedBot
 {
     internal class Bot
     {
-        private const int searchLimit = 5;
+        private readonly int searchLimit = 25;
+        private readonly int cacheInlineTime = 30;
 
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly ReceiverOptions _receiverOptions;
@@ -108,7 +111,7 @@ namespace SavedBot
                 }
                 catch (SavedMessageNotFoundException) { }
             }
-            await _client.AnswerInlineQueryAsync(inlineQuery.Id, inlineQueries);
+            await _client.AnswerInlineQueryAsync(inlineQuery.Id, inlineQueries, cacheInlineTime);
 
         }
         private async Task HandleMessageAsync(Message message)
@@ -140,6 +143,55 @@ namespace SavedBot
                 MessageType.Venue => HandleNotImplementedAsync(chatId),
             }) ;
         }
+        private async Task HandleFileReceivedAsync(long chatId, string fileId, MessageType messageType)
+        {
+            try
+            {
+                if (fileId is not null)
+                {
+                    _addCommandHandler.Handle(new OngoingAddFileChat(chatId, new SavedFile(fileId, messageType)));
+                    await _client.SendTextMessageAsync(chatId, "Successfully saved your file!");
+                }
+            }
+            catch (NotFoundOngoingAddChatException ex)
+            {
+                await _client.SendTextMessageAsync(chatId, ex.Message);
+            }
+        }
+        private async Task HandleTextReceivedAsync(long chatId, string text)
+        {
+            if (text is { })
+            {
+                _logger.Log($"Received message from {chatId}: {text}");
+                if (text.StartsWith("/")) await HandleCommandAsync(chatId, text);
+                else
+                {
+                    try
+                    {
+                        if (_addCommandHandler.IsNamed(chatId))
+                        {
+                            _addCommandHandler.Handle(new OngoingAddTextChat(chatId, text));
+                            await _client.SendTextMessageAsync(chatId, "Successfully saved your text!");
+                        }
+                        else
+                        {
+                            _addCommandHandler.Handle(new OngoingNameChat(chatId, text));
+                            await _client.SendTextMessageAsync(chatId,
+                                "Great, now send the message that you want to save. It can be anything: from text, photo or GIF to location or a contact");
+                        }
+                    }
+                    catch (NotFoundOngoingAddChatException)
+                    {
+                        await _client.SendTextMessageAsync(chatId, "I cannot recognise what you're trying to say to me. Maybe try one of the commands from /help list?");
+                    }
+                }
+            }
+            else
+            {
+                _logger.Log($"Message is of type Text, but Text property is null. ChatId: {chatId}");
+            }
+            return;
+        }
         private async Task HandleCommandAsync(long chatId, string messageText)
         {
             (string, string?) GetCommand(string text)
@@ -156,8 +208,13 @@ namespace SavedBot
             {
                 case "/start":
                     {
-                        await _client.SendTextMessageAsync(chatId,
-                            "Welcome to bot! You can start by typing /help");
+                        //await _client.SendTextMessageAsync(chatId, "Welcome to bot! You can start by typing /help");
+                        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[]
+                        {
+                            new KeyboardButton[] { "/add", "Remove (Not available)", "Settings (Not available)" }
+                        })
+                        { ResizeKeyboard = true };
+                        await _client.SendTextMessageAsync(chatId, "Choose a command from menu", replyMarkup: replyKeyboardMarkup);
                     }
                     break;
                 case "/help":
@@ -168,18 +225,10 @@ namespace SavedBot
                     break;
                 case "/add":
                     {
-                        if (argument is not null) 
-                        { 
-                            _addCommandHandler.Handle(new OngoingAddChat(chatId, argument));
-                            await _client.SendTextMessageAsync(chatId,
-                                "Great, now send the message that you want to save. It can be anything: from text, photo or GIF to location or a contact");
-                        }
-                        else
-                        {
-                            await _client.SendTextMessageAsync(chatId,
-                                "You must pass a name to /add command");
-                            return;
-                        }
+                        _addCommandHandler.Handle(new OngoingAddChat(chatId));
+                        await _client.SendTextMessageAsync(chatId,
+                            "Now enter the name of the message you want to save");
+                        return;
                     }
                     break;
                 case "/find":
@@ -189,8 +238,8 @@ namespace SavedBot
                             try
                             {
                                 SavedFile file = _modelContext.FindFile(chatId, argument);
-                                if(file.FileType == MessageType.Photo)
-                                    await _client.SendPhotoAsync(chatId, InputFile.FromFileId(file.Id));                            
+                                if (file.FileType == MessageType.Photo)
+                                    await _client.SendPhotoAsync(chatId, InputFile.FromFileId(file.Id));
                                 else
                                     await _client.SendDocumentAsync(chatId, InputFile.FromFileId(file.Id));
                             }
@@ -222,46 +271,6 @@ namespace SavedBot
                     }
                     break;
             }
-        }
-        private async Task HandleFileReceivedAsync(long chatId, string fileId, MessageType messageType)
-        {
-            try
-            {
-                if (fileId is not null)
-                {
-                    _addCommandHandler.Handle(new OngoingAddFileChat(chatId, new SavedFile(fileId, messageType)));
-                    await _client.SendTextMessageAsync(chatId, "Successfully saved your file!");
-                }
-            }
-            catch (NotFoundOngoingAddChatException ex)
-            {
-                await _client.SendTextMessageAsync(chatId, ex.Message);
-            }
-        }
-        private async Task HandleTextReceivedAsync(long chatId, string text)
-        {
-            if (text is { })
-            {
-                _logger.Log($"Received message from {chatId}: {text}");
-                if (text.StartsWith("/")) await HandleCommandAsync(chatId, text);
-                else
-                {
-                    try
-                    {
-                        _addCommandHandler.Handle(new OngoingAddTextChat(chatId, text));
-                        await _client.SendTextMessageAsync(chatId, "Successfully saved your text!");
-                    }
-                    catch (NotFoundOngoingAddChatException)
-                    {
-                        await _client.SendTextMessageAsync(chatId, "I cannot recognise what you're trying to say to me. Maybe try one of the commands from /help list?");
-                    }
-                }
-            }
-            else
-            {
-                _logger.Log($"Message is of type Text, but Text property is null. ChatId: {chatId}");
-            }
-            return;
         }
         private async Task HandleNotImplementedAsync(long chatId)
         {
