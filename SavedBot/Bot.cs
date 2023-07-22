@@ -17,13 +17,13 @@ namespace SavedBot
     {
         private const int searchLimit = 5;
 
-        private CancellationTokenSource _cancellationTokenSource;
-        private ReceiverOptions _receiverOptions;
-        private TelegramBotClient _client;
-        private ILogger _logger;
-        private IModelContext _modelContext;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly ReceiverOptions _receiverOptions;
+        private readonly TelegramBotClient _client;
+        private readonly ILogger _logger;
+        private readonly IModelContext _modelContext;
 
-        private AddCommandHandler _addCommandHandler;
+        private readonly AddCommandHandler _addCommandHandler;
         public Bot(string token, IModelContext modelContext, ILogger logger)
         {
             _cancellationTokenSource = new CancellationTokenSource();
@@ -50,12 +50,16 @@ namespace SavedBot
         {
             try
             {
-            await (update.Type switch
-            {
-                UpdateType.Message => HandleMessageAsync(update.Message),
-                UpdateType.InlineQuery => HandleInlineQueryAsync(update.InlineQuery)
-            });
-        }
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+                await (update.Type switch
+                {
+                    UpdateType.Message => HandleMessageAsync(update.Message),
+                    UpdateType.InlineQuery => HandleInlineQueryAsync(update.InlineQuery)
+                });
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+#pragma warning restore CS8604 // Possible null reference argument.
+            }
             catch (Exception ex)
             {
                 _logger.Log("Global Exception caught: " + ex.ToString());
@@ -76,30 +80,32 @@ namespace SavedBot
             _logger.Log($"Searching by query: {inlineQuery.Query}");
 
             string[] searchResult = _modelContext.Search(user.ChatId, inlineQuery.Query, searchLimit).ToArray();
-            InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Count()];
+            InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Length];
 
-            for(int i = 0; i < searchResult.Count(); i++)
+            for(int i = 0; i < searchResult.Length; i++)
             {
                 //TODO: Implement less searches
                 try
                 {
-                if (_modelContext.FindFile(user.ChatId, searchResult[i]) is { } file)
-                {
-                    inlineQueries[i] = (file.FileType switch
+                    if (_modelContext.FindFile(user.ChatId, searchResult[i]) is { } file)
                     {
-                        MessageType.Photo => new InlineQueryResultCachedPhoto(searchResult[i], file.Id),
-                        MessageType.Sticker => new InlineQueryResultCachedSticker(searchResult[i], file.Id),
-                        MessageType.Audio => new InlineQueryResultCachedAudio(searchResult[i], file.Id),
-                        MessageType.Document => new InlineQueryResultCachedDocument(searchResult[i], file.Id, searchResult[i]),
-                        MessageType.Video => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
-                        MessageType.VideoNote => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
-                        MessageType.Voice => new InlineQueryResultCachedVoice(searchResult[i], file.Id, searchResult[i]),
-                        MessageType.Animation => new InlineQueryResultCachedGif(searchResult[i], file.Id)
+#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+                        inlineQueries[i] = (file.FileType switch
+                        {
+                            MessageType.Photo => new InlineQueryResultCachedPhoto(searchResult[i], file.Id),
+                            MessageType.Sticker => new InlineQueryResultCachedSticker(searchResult[i], file.Id),
+                            MessageType.Audio => new InlineQueryResultCachedAudio(searchResult[i], file.Id),
+                            MessageType.Document => new InlineQueryResultCachedDocument(searchResult[i], file.Id, searchResult[i]),
+                            MessageType.Video => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
+                            MessageType.VideoNote => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
+                            MessageType.Voice => new InlineQueryResultCachedVoice(searchResult[i], file.Id, searchResult[i]),
+                            MessageType.Animation => new InlineQueryResultCachedGif(searchResult[i], file.Id)
                         });
+#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
+                    }
+                    else if (_modelContext.FindText(user.ChatId, searchResult[i]) is { } text)
+                        inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
                 }
-                else if (_modelContext.FindText(user.ChatId, searchResult[i]) is { } text)
-                    inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
-            }
                 catch (SavedMessageNotFoundException) { }
             }
             await _client.AnswerInlineQueryAsync(inlineQuery.Id, inlineQueries);
@@ -110,8 +116,9 @@ namespace SavedBot
             if (message is not { } ) return;
 
             long chatId = message.Chat.Id;
+#pragma warning disable  // Dereference of a possibly null reference.
             _modelContext.AddUser(new Model.User(message.From.Id, chatId));
-            
+
             //TODO: Validate all of the possible Telegram size restrictions
             await (message.Type switch
             {
@@ -125,6 +132,7 @@ namespace SavedBot
                 MessageType.Sticker => HandleFileReceivedAsync(chatId, message.Sticker.FileId, message.Type),
                 MessageType.VideoNote => HandleFileReceivedAsync(chatId, message.VideoNote.FileId, message.Type),
                 MessageType.Voice => HandleFileReceivedAsync(chatId, message.Voice.FileId, message.Type),
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
                 MessageType.Contact => HandleNotImplementedAsync(chatId),
                 MessageType.Location => HandleNotImplementedAsync(chatId),
@@ -148,9 +156,9 @@ namespace SavedBot
             {
                 case "/start":
                     {
-                            await _client.SendTextMessageAsync(chatId,
-                                "Welcome to bot! You can start by typing /help");
-                        }
+                        await _client.SendTextMessageAsync(chatId,
+                            "Welcome to bot! You can start by typing /help");
+                    }
                     break;
                 case "/help":
                     {

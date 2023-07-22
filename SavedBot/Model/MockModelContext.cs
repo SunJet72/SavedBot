@@ -13,10 +13,12 @@ namespace SavedBot.Model
 {
     public class MockModelContext : ModelContext
     {
-        private Dictionary<long, Dictionary<string, SavedFile>> _files;
-        private Dictionary<long, Dictionary<string, string>> _textes;
-        private List<User> _users;
-        private ILogger _logger;
+        private readonly Dictionary<long, Dictionary<string, SavedFile>> _files;
+        private readonly Dictionary<long, Dictionary<string, string>> _textes;
+        private readonly List<User> _users;
+#pragma warning disable IDE0052 // Remove unread private members
+        private readonly ILogger _logger;
+#pragma warning restore IDE0052 // Remove unread private members
         public MockModelContext(ILogger logger)
         {
             _files = new Dictionary<long, Dictionary<string, SavedFile>>();
@@ -26,14 +28,10 @@ namespace SavedBot.Model
         }
         private bool CheckNameAvailability(long chatId, string name)
         {
-            Dictionary<string, string> savedText;
-
-            if (_textes.TryGetValue(chatId, out savedText))
+            if (_textes.TryGetValue(chatId, out Dictionary<string, string>? savedText))
                 if (savedText.ContainsKey(name)) return false;
 
-            Dictionary<string, SavedFile> savedFile;
-
-            if (_files.TryGetValue(chatId, out savedFile))
+            if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? savedFile))
                 if (savedFile.ContainsKey(name)) return false;
 
             return true;
@@ -42,8 +40,7 @@ namespace SavedBot.Model
         {
             if (!CheckNameAvailability(chatId, name)) throw new NameAlreadyExistsException(name);
 
-            Dictionary<string, SavedFile> saved;
-            if (_files.TryGetValue(chatId, out saved))
+            if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? saved))
                 saved.Add(name, file);
             else
                 _files.Add(chatId, new Dictionary<string, SavedFile>() { { name, file } });
@@ -53,8 +50,7 @@ namespace SavedBot.Model
         {
             if (!CheckNameAvailability(chatId, name)) throw new NameAlreadyExistsException(name);
 
-            Dictionary<string, string> saved;
-            if (_textes.TryGetValue(chatId, out saved))
+            if (_textes.TryGetValue(chatId, out Dictionary<string, string>? saved))
                 saved.Add(name, text);
             else
                 _textes.Add(chatId, new Dictionary<string, string>() { { name, text } });
@@ -62,25 +58,21 @@ namespace SavedBot.Model
 
         public override SavedFile FindFile(long chatId, string name)
         {
-            Dictionary<string, SavedFile> saved;
 
-            if (_files.TryGetValue(chatId, out saved))
+            if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? saved))
             {
-                SavedFile file;
-                if(saved.TryGetValue(name, out file))
-                    return file;  
+                if (saved.TryGetValue(name, out SavedFile? file))
+                    return file;
             }
 
             throw new SavedMessageNotFoundException(name);
         }
         public override string FindText(long chatId, string name)
         {
-            Dictionary<string, string> saved;
 
-            if (_textes.TryGetValue(chatId, out saved))
+            if (_textes.TryGetValue(chatId, out Dictionary<string, string>? saved))
             {
-                string text;
-                if (saved.TryGetValue(name, out text))
+                if (saved.TryGetValue(name, out string? text))
                     return text;
             }
 
@@ -89,23 +81,17 @@ namespace SavedBot.Model
 
         public override IEnumerable<string> Search(long chatId, string partial, int limit)
         {
-            Dictionary<string, SavedFile> savedFiles;
-            Dictionary<string, string> savedTextes;
+            IEnumerable<string> result = Array.Empty<string>();
 
-            IEnumerable<string> result = null; 
-
-            if (_files.TryGetValue(chatId, out savedFiles))
+            if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? savedFiles))
             {
                 result = savedFiles.Keys.Where((key) => key.Contains(partial));
                 if(result.Count() >= limit)
                     return result.Take(limit);
             }
 
-            if (_textes.TryGetValue(chatId, out savedTextes)) 
-            {
-                if (result is null) result = savedTextes.Keys.Where((key) => key.Contains(partial));
-                else result.Concat(savedTextes.Keys.Where((key) => key.Contains(partial)));
-            }
+            if (_textes.TryGetValue(chatId, out Dictionary<string, string>? savedTextes)) 
+                result = result.Concat(savedTextes.Keys.Where((key) => key.Contains(partial)));
 
             if(result.Count() > limit) result = result.Take(limit);
 
