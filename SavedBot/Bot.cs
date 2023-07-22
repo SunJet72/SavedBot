@@ -108,12 +108,14 @@ namespace SavedBot
         private async Task HandleMessageAsync(Message message)
         {
             if (message is not { } ) return;
+
             long chatId = message.Chat.Id;
+            _modelContext.AddUser(new Model.User(message.From.Id, chatId));
             
             //TODO: Validate all of the possible Telegram size restrictions
             await (message.Type switch
             {
-                MessageType.Text => HandleTextReceivedAsync(chatId, (message.Chat.Type == ChatType.Private) ? message.From.Id : -1, message.Text),
+                MessageType.Text => HandleTextReceivedAsync(chatId, message.Text),
                 MessageType.Photo => HandleFileReceivedAsync(chatId, message.Photo.Last().FileId, message.Type),
 
                 MessageType.Video => HandleFileReceivedAsync(chatId, message.Video.FileId, message.Type),
@@ -130,7 +132,7 @@ namespace SavedBot
                 MessageType.Venue => HandleNotImplementedAsync(chatId),
             }) ;
         }
-        private async Task HandleCommandAsync(long chatId, long userId, string messageText)
+        private async Task HandleCommandAsync(long chatId, string messageText)
         {
             (string, string?) GetCommand(string text)
             {
@@ -146,13 +148,9 @@ namespace SavedBot
             {
                 case "/start":
                     {
-                        if (userId != -1)
-                        {
-                            _modelContext.AddUser(new Model.User(userId, chatId));
                             await _client.SendTextMessageAsync(chatId,
                                 "Welcome to bot! You can start by typing /help");
                         }
-                    }
                     break;
                 case "/help":
                     {
@@ -232,7 +230,7 @@ namespace SavedBot
                 await _client.SendTextMessageAsync(chatId, ex.Message);
             }
         }
-        private async Task HandleTextReceivedAsync(long chatId, long userId, string text)
+        private async Task HandleTextReceivedAsync(long chatId, string text)
         {
             if (text is { })
             {
