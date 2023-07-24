@@ -10,6 +10,7 @@ namespace SavedBot.Model
     {
         public long Id { get; private set; }
         public long ChatId { get; private set; }
+     
 
         public User(long id, long chatId)
         {
