@@ -7,7 +7,7 @@ using SavedBot.DbModels;
 string token = "Your token";
 
 ILogger logger = new ConsoleLogger();
-IModelContext context = new MockModelContext(logger);
+IModelContext context = new ModelContext(logger);
 Console.InputEncoding = Encoding.UTF8;
 Console.OutputEncoding = Encoding.UTF8;
 using (TelegramContext db = new TelegramContext())

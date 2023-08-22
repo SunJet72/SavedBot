@@ -1,6 +1,7 @@
 ﻿using SavedBot.Exceptions;
 using System.Collections;
 using System.Reflection.Metadata;
+using SavedBot.DbModels;
 
 namespace SavedBot.Model
 {
@@ -26,37 +27,31 @@ namespace SavedBot.Model
         /// Add new user
         /// </summary>
         /// <param name="user"></param>
-        void AddUser(User user);
+        void AddUser(DbUser user);
         /// <summary>
         /// Get existing User by his Id
         /// </summary>
         /// <param name="userId"></param>
-        User? GetUserById(long userId);
+        DbUser? GetUserById(long userId);
         /// <summary>
         /// Get existing User by his ChatId
         /// </summary>
         /// <param name="chatId"></param>
-        User? GetUserByChatId(long chatId);
-        /// <summary>
-        /// Returns found saved file or throws an exception
-        /// </summary>
-        /// <param name="chatId">Telegram Chat Id</param>
-        /// <param name="name">Custom name of the saved file</param>
-        /// <exception cref="SavedMessageNotFoundException"></exception>
-        SavedFile FindFile(long chatId, string name);
+       
+        // SavedFile FindFile(long chatId, string name);
         /// <summary>
         /// Returns found saved text or throws an exception
         /// </summary>
         /// <param name="chatId">Telegram Chat Id</param>
         /// <param name="name">Custom name of the saved text</param>
         /// <exception cref="SavedMessageNotFoundException"></exception>
-        string FindText(long chatId, string name);
+        // string FindText(long chatId, string name);
         /// <summary>
         /// Searches for the saved messages which names contain the partial
         /// </summary>
         /// <param name="chatId"></param>
         /// <param name="partial"></param>
         /// <returns></returns>
-        IEnumerable<string> Search(long chatId, string partial, int limit);
+        // IEnumerable<string> Search(long chatId, string partial, int limit);
     }
 }
