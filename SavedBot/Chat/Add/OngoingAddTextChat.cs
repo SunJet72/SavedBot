@@ -1,4 +1,4 @@
-﻿namespace SavedBot.Chat
+﻿namespace SavedBot.Chat.Add
 {
     public class OngoingAddTextChat : OngoingChat
     {

@@ -11,5 +11,7 @@ namespace SavedBot.Handlers
         /// <param name="ongoingChat"></param>
         /// <exception cref="NotFoundOngoingAddChatException"></exception>
         public void Handle(OngoingChat ongoingChat);
+        //TODO: Remove
+        public bool IsNamed(long chatId);
     }
 }

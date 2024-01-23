@@ -1,16 +1,21 @@
-﻿using SavedBot;
+﻿using Microsoft.Extensions.Configuration;
+using SavedBot;
 using SavedBot.Loggers;
 using SavedBot.Model;
 using System.Text;
 
-string token = "Your token";
+var config = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .Build();
+
+string token = config["TG_BOT_KEY"];
 
 ILogger logger = new ConsoleLogger();
 IModelContext context = new MockModelContext(logger);
 Console.InputEncoding = Encoding.UTF8;
 Console.OutputEncoding = Encoding.UTF8;
 
-Bot bot = new Bot(token, context, logger);
+Bot bot = new(token, context, logger);
 bot.Start();
 
 Console.ReadLine();

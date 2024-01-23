@@ -43,14 +43,14 @@ namespace SavedBot.Model
         /// <param name="chatId">Telegram Chat Id</param>
         /// <param name="name">Custom name of the saved file</param>
         /// <exception cref="SavedMessageNotFoundException"></exception>
-        SavedFile FindFile(long chatId, string name);
+        SavedFile GetFile(long chatId, string name);
         /// <summary>
         /// Returns found saved text or throws an exception
         /// </summary>
         /// <param name="chatId">Telegram Chat Id</param>
         /// <param name="name">Custom name of the saved text</param>
         /// <exception cref="SavedMessageNotFoundException"></exception>
-        string FindText(long chatId, string name);
+        string GetText(long chatId, string name);
         /// <summary>
         /// Searches for the saved messages which names contain the partial
         /// </summary>
