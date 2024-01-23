@@ -1,9 +1,14 @@
-﻿using SavedBot;
+﻿using Microsoft.Extensions.Configuration;
+using SavedBot;
 using SavedBot.Loggers;
 using SavedBot.Model;
 using System.Text;
 
-string token = "Your token";
+var config = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .Build();
+
+string token = config["TG_BOT_KEY"];
 
 ILogger logger = new ConsoleLogger();
 IModelContext context = new MockModelContext(logger);
