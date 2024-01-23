@@ -90,7 +90,7 @@ namespace SavedBot
                 //TODO: Implement less searches
                 try
                 {
-                    if (_modelContext.FindFile(user.ChatId, searchResult[i]) is { } file)
+                    if (_modelContext.GetFile(user.ChatId, searchResult[i]) is { } file)
                     {
 #pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                         inlineQueries[i] = (file.FileType switch
@@ -106,7 +106,7 @@ namespace SavedBot
                         });
 #pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                     }
-                    else if (_modelContext.FindText(user.ChatId, searchResult[i]) is { } text)
+                    else if (_modelContext.GetText(user.ChatId, searchResult[i]) is { } text)
                         inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
                 }
                 catch (SavedMessageNotFoundException) { }
@@ -237,7 +237,7 @@ namespace SavedBot
                         {
                             try
                             {
-                                SavedFile file = _modelContext.FindFile(chatId, argument);
+                                SavedFile file = _modelContext.GetFile(chatId, argument);
                                 if (file.FileType == MessageType.Photo)
                                     await _client.SendPhotoAsync(chatId, InputFile.FromFileId(file.Id));
                                 else
@@ -247,7 +247,7 @@ namespace SavedBot
                             {
                                 try
                                 {
-                                    string text = _modelContext.FindText(chatId, argument);
+                                    string text = _modelContext.GetText(chatId, argument);
                                     await _client.SendTextMessageAsync(chatId, text);
                                 }
                                 catch (SavedMessageNotFoundException ex)

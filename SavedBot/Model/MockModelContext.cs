@@ -56,7 +56,7 @@ namespace SavedBot.Model
                 _textes.Add(chatId, new Dictionary<string, string>() { { name, text } });
         }
 
-        public SavedFile FindFile(long chatId, string name)
+        public SavedFile GetFile(long chatId, string name)
         {
 
             if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? saved))
@@ -67,7 +67,7 @@ namespace SavedBot.Model
 
             throw new SavedMessageNotFoundException(name);
         }
-        public string FindText(long chatId, string name)
+        public string GetText(long chatId, string name)
         {
 
             if (_textes.TryGetValue(chatId, out Dictionary<string, string>? saved))
