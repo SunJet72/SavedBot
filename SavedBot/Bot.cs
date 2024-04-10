@@ -68,7 +68,7 @@ namespace SavedBot
         private async Task HandleInlineQueryAsync(InlineQuery inlineQuery)
         {
             if (inlineQuery is not { }) return;
-            Model.User? user = _modelContext.GetUserById(inlineQuery.From.Id);
+            Model.TelegramUser? user = _modelContext.GetUserById(inlineQuery.From.Id);
 
             if (user is null)
             {
