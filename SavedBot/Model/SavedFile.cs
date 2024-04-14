@@ -7,14 +7,16 @@ using Telegram.Bot.Types.Enums;
 
 namespace SavedBot.Model
 {
-    public class SavedFile
+    public class SavedFile : SavedItem
     {
-        public string Id { get; set; }
-        //TODO: Our own FileType enum
+        public long FileId { get; set; }
+
+        public string FileName { get; set; }
         public MessageType FileType { get; set; }
-        public SavedFile(/*string name,*/ string id, MessageType fileType)// : base(name)
+        public SavedFile(string name, long id, MessageType fileType)
         {
-            Id = id;
+            FileName = name;
+            FileId = id;
             FileType = fileType;
         }
     }

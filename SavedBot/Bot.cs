@@ -117,7 +117,7 @@ namespace SavedBot
 
             long chatId = message.Chat.Id;
 #pragma warning disable  // Dereference of a possibly null reference.
-            _modelContext.AddUser(new Model.User(message.From.Id, chatId));
+            _modelContext.AddUser(new Model.TelegramUser(message.From.Id, chatId));
 
             //TODO: Validate all of the possible Telegram size restrictions
             await (message.Type switch

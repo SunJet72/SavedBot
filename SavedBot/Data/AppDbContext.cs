@@ -11,7 +11,7 @@ namespace SavedBot.Data
     public class AppDbContext : DbContext
     {
         public DbSet<TelegramUser> TelegramUsers { get; set; }
-        public DbSet<MediaFile> MediaFiles { get; set; }
+        public DbSet<SavedItem> SavedItems { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { 
@@ -25,10 +25,10 @@ namespace SavedBot.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MediaFile>()
+            modelBuilder.Entity<SavedItem>()
                 .HasOne(mf => mf.User)
                 .WithMany()
-                .HasForeignKey(mf => mf.UserId);
+                .HasForeignKey(mf => mf.Id);
         }
     }
 }

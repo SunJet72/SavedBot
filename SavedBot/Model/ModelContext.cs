@@ -7,65 +7,61 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Telegram.Bot.Types;
-using SavedBot.Database;
-using SavedBot.DbModels;
+using SavedBot.Data;
+using SavedBot.Model;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.EntityFrameworkCore;
 
 namespace SavedBot.Model
 {
     public class ModelContext : IModelContext
     {
-        public readonly TelegramContext _telegramContext;
-        public ModelContext(TelegramContext telegramContext)
+        public readonly AppDbContext _dbContext;
+        public ModelContext(AppDbContext telegramContext)
         {
-            _telegramContext = telegramContext;
+            _dbContext = telegramContext;
         }
        
 #pragma warning disable IDE0052 // Remove unread private members
         private readonly ILogger _logger;
 #pragma warning restore IDE0052 // Remove unread private members
-    
-        private bool CheckNameAvailability(long chatId, string name)
+
+        public async Task AddText(string text)
         {
-            bool isAvailable = !_telegramContext.SavedMessages.Any(message => message.name == name);
-            return isAvailable;
+
         }
-        public  void AddFile(long chatId, string name, SavedFile file)
+        public async Task AddFile(SavedFile file)
+        {
+            await _dbContext.SavedItems.AddAsync(file);
+            await _dbContext.SaveChangesAsync();
+        } 
+
+        public async Task AddUser(TelegramUser user)
+        {
+            await _dbContext.TelegramUsers.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<TelegramUser> GetUser(long userId)
+        {
+            return await _dbContext.TelegramUsers.FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit)
         {
             
-        }
 
-        public void AddText(long chatId, string name, string text)
-        {
-           
-        }
+            var savedFilesQuery = _dbContext.SavedItems
+                                        .OfType<SavedFile>()  
+                                        .Include(sf => sf.User) 
+                                        .Where(sf => sf.User.Id == user.Id && sf.FileName.Contains(partial))
+                                        .Take(limit);
 
-        /* public SavedFile FindFile(long chatId, string name)
-        {
+            var savedFiles = await savedFilesQuery.ToListAsync();
 
-           
-        }
-        public string FindText(long chatId, string name)
-        {
-   
-        }
 
-        public IEnumerable<string> Search(long chatId, string partial, int limit)
-        {
-            
-        } */
+            return savedFiles.AsQueryable();
 
-        public void AddUser(DbUser user)
-        {
-            _telegramContext.Users.Add(user);
-            _telegramContext.SaveChanges();
-        }
-
-      
-        public DbUser? GetUserById(long userId)
-        {
-            return _telegramContext.Users.FirstOrDefault(u => u.id == userId);
-            
         }
     }
 }

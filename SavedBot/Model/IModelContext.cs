@@ -1,7 +1,7 @@
 ﻿using SavedBot.Exceptions;
 using System.Collections;
 using System.Reflection.Metadata;
-using SavedBot.DbModels;
+using SavedBot.Model;
 
 namespace SavedBot.Model
 {
@@ -14,7 +14,7 @@ namespace SavedBot.Model
         /// <param name="name">Custom name of the saved file</param>
         /// <param name="fileId">Telegram File Id</param>
         /// <exception cref="NameAlreadyExistsException"></exception>
-        void AddFile(long chatId, string name, SavedFile file);
+        Task AddFile(SavedFile file);
         /// <summary>
         /// Adds saved text to the Model container
         /// </summary>
@@ -22,22 +22,22 @@ namespace SavedBot.Model
         /// <param name="name">Custom name of the saved text</param>
         /// <param name="text">Saved text</param>
         /// <exception cref="NameAlreadyExistsException"></exception>
-        void AddText(long chatId, string name, string text);
+        Task AddText(string text);
         /// <summary>
         /// Add new user
         /// </summary>
         /// <param name="user"></param>
-        void AddUser(DbUser user);
+        Task AddUser(TelegramUser user);
         /// <summary>
         /// Get existing User by his Id
         /// </summary>
         /// <param name="userId"></param>
-        DbUser? GetUserById(long userId);
+        Task<TelegramUser> GetUser(long userId);
         /// <summary>
         /// Get existing User by his ChatId
         /// </summary>
         /// <param name="chatId"></param>
-       
+
         // SavedFile FindFile(long chatId, string name);
         /// <summary>
         /// Returns found saved text or throws an exception

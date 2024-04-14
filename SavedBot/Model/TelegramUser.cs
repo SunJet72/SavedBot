@@ -9,9 +9,11 @@ namespace SavedBot.Model
     public class TelegramUser : IComparable<TelegramUser>
     {
         public long Id { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Username { get; set; }
+        public long? ChatId { get; set; }
+
+        public List<SavedFile>? SavedItems { get; set; }
+        
+        public string LanguageCode { get; set; } = "en";
 
         public int CompareTo(TelegramUser? other)
         {
