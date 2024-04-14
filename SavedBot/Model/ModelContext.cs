@@ -26,7 +26,7 @@ namespace SavedBot.Model
         private readonly ILogger _logger;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public async Task AddText(string text)
+        public async  Task AddText(string text)
         {
 
         }
@@ -49,19 +49,16 @@ namespace SavedBot.Model
 
         public async Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit)
         {
-            
+            IQueryable<SavedItem> savedFilesQuery = _dbContext.SavedItems
+                                                    .OfType<SavedFile>()
+                                                    .Include(sf => sf.User)
+                                                    .Where(sf => sf.User.Id == user.Id && sf.FileName.Contains(partial))
+                                                    .Take(limit);
 
-            var savedFilesQuery = _dbContext.SavedItems
-                                        .OfType<SavedFile>()  
-                                        .Include(sf => sf.User) 
-                                        .Where(sf => sf.User.Id == user.Id && sf.FileName.Contains(partial))
-                                        .Take(limit);
-
-            var savedFiles = await savedFilesQuery.ToListAsync();
-
+            List<SavedItem> savedFiles = await savedFilesQuery.ToListAsync();
 
             return savedFiles.AsQueryable();
-
         }
+
     }
 }

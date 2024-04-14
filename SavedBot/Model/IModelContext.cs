@@ -52,6 +52,6 @@ namespace SavedBot.Model
         /// <param name="chatId"></param>
         /// <param name="partial"></param>
         /// <returns></returns>
-        // IEnumerable<string> Search(long chatId, string partial, int limit);
+        Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit);
     }
 }

@@ -79,7 +79,9 @@ namespace SavedBot
             }
             _logger.Log($"Searching by query: {inlineQuery.Query}");
 
-            string[] searchResult = _modelContext.Search(user.ChatId, inlineQuery.Query, searchLimit).ToArray();
+
+            IQueryable<SavedItem> searchResultQuery = await _modelContext.Search(user, inlineQuery.Query, searchLimit);
+            string[] searchResult = searchResultQuery.Select(item => item.ToString()).ToArray();
             InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Length];
 
             for(int i = 0; i < searchResult.Length; i++)

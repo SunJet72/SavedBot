@@ -8,6 +8,12 @@ namespace SavedBot.Model
 {
     public class TelegramUser : IComparable<TelegramUser>
     {
+        public TelegramUser(long id, long chatId)
+        {
+            Id = id;
+            ChatId = chatId;
+        }
+
         public long Id { get; set; }
         public long? ChatId { get; set; }
 

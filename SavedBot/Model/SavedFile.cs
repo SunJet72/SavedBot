@@ -15,9 +15,9 @@ namespace SavedBot.Model
         public MessageType FileType { get; set; }
         public SavedFile(string name, long id, MessageType fileType)
         {
-            FileName = name;
-            FileId = id;
-            FileType = fileType;
+            this.FileName = name;
+            this.FileId = id;
+            this.FileType = fileType;
         }
     }
 }
