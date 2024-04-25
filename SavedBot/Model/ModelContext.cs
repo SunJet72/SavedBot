@@ -33,8 +33,18 @@ namespace SavedBot.Model
 
         public async Task AddUserAsync(TelegramUser user)
         {
-            await _dbContext.TelegramUsers.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            TelegramUser existingUser = await _dbContext.TelegramUsers.FindAsync(user.Id);
+            if (existingUser == null)
+            {
+                await _dbContext.TelegramUsers.AddAsync(user);
+                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                _dbContext.TelegramUsers.Attach(user);
+                _dbContext.Entry(user).State = EntityState.Modified;
+                await _dbContext.SaveChangesAsync();
+            }
         }
 
         public async Task<TelegramUser?> GetUserAsync(long userId)

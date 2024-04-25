@@ -17,7 +17,7 @@ namespace SavedBot.Model
             ChatId = chatId;
             LanguageCode = languageCode;
         }
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public long? ChatId { get; set; }
 

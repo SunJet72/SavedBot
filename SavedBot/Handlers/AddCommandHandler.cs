@@ -11,7 +11,7 @@ namespace SavedBot.Handlers
     {
         private readonly List<OngoingChat> _chats = [];
 
-        public override void Handle(OngoingChat chat)
+        public async override void Handle(OngoingChat chat)
         {
             switch (chat)
             {
@@ -25,7 +25,7 @@ namespace SavedBot.Handlers
                             addFileChat.File.User = new TelegramUser() { Id = addFileChat.UserId };
 
 
-                            _modelContext.AddItemAsync(addFileChat.File);
+                             await _modelContext.AddItemAsync(addFileChat.File);
                             _chats.Remove(addChat);
                         }
                         else throw new NotFoundOngoingAddChatException();
