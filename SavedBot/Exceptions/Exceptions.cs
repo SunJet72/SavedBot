@@ -25,15 +25,9 @@ namespace SavedBot.Exceptions
         Exception($"Saved message with name {name} is not found");
 
     /// <summary>
-    /// Thrown if the telegram token was not found in user secrets
+    /// Thrown if value with key given not found in user secrets
     /// </summary>
-    public class TelegramBotTokenNotFoundException() : 
-        Exception($"The telegram bot token was not found, unable to proceed.");
-
-    /// <summary>
-    /// Thrown if the webhook url was not found in the configuration
-    /// </summary>
-    public class WebhookUrlNotFoundException() :
-        Exception($"The webhook url was not found, unable to proceed.");
+    public class UserSecretNotFoundException(string key) : 
+        Exception($"User secret {key} was not found, unable to proceed.");
 
 }

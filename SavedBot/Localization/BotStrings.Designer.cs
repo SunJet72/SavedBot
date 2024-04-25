@@ -133,15 +133,6 @@ namespace SavedBot.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must pass a name to /find command.
-        /// </summary>
-        internal static string FindNoName {
-            get {
-                return ResourceManager.GetString("FindNoName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Here is the list of my commands:.
         /// </summary>
         internal static string Help {

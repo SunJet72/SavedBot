@@ -12,6 +12,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
+using SavedBot.Data;
 
 namespace SavedBot.Bot
 {
@@ -41,10 +42,10 @@ namespace SavedBot.Bot
         /// </summary>
         /// <returns></returns>
         /// <exception cref="TelegramBotTokenNotFoundException">Token was not found in User Secrets</exception>
-        public static Bot BuildBot(string token)
+        public static Bot BuildBot(string token, AppDbContext dbContext)
         {
             ILogger logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger(nameof(Bot));
-            IModelContext context = new MockModelContext(logger);
+            IModelContext context = new ModelContext(dbContext);
 
             return new(token, context, logger);
         }
@@ -109,8 +110,8 @@ namespace SavedBot.Bot
         }
         private async Task HandleInlineQueryAsync(InlineQuery inlineQuery)
         {
-            if (inlineQuery is not { }) return;
-            Model.TelegramUser? user = _modelContext.GetUserById(inlineQuery.From.Id);
+            if (inlineQuery is null) return;
+            TelegramUser? user = await _modelContext.GetUser(inlineQuery.From.Id);
 
             //Changing the culture for the ResourceManager to find the right localization
             BotStrings.Culture = new CultureInfo(user?.LanguageCode ?? defaultCulture.Name) ?? defaultCulture;
@@ -127,33 +128,33 @@ namespace SavedBot.Bot
             _logger.LogDebug("Searching by query: {Query}", inlineQuery.Query);
 
 
-            IQueryable<SavedItem> searchResultQuery = await _modelContext.Search(user, inlineQuery.Query, searchLimit);
-            string[] searchResult = searchResultQuery.Select(item => item.ToString()).ToArray();
-            InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Length];
+            IEnumerable<SavedItem> searchResult = await _modelContext.Search(user, inlineQuery.Query, searchLimit);
+            InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Count()];
 
-            for (int i = 0; i < searchResult.Length; i++)
+            int i = 0;
+            foreach (SavedItem item in searchResult)
             {
                 //TODO: Implement less searches
                 try
                 {
-                    if (_modelContext.GetFile(user.ChatId, searchResult[i]) is { } file)
+                    if (item as SavedFile is { } file)
                     {
-#pragma warning disable CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
-                        inlineQueries[i] = file.FileType switch
+                        inlineQueries[i++] = file.FileType switch
                         {
-                            MessageType.Photo => new InlineQueryResultCachedPhoto(searchResult[i], file.Id),
-                            MessageType.Sticker => new InlineQueryResultCachedSticker(searchResult[i], file.Id),
-                            MessageType.Audio => new InlineQueryResultCachedAudio(searchResult[i], file.Id),
-                            MessageType.Document => new InlineQueryResultCachedDocument(searchResult[i], file.Id, searchResult[i]),
-                            MessageType.Video => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
-                            MessageType.VideoNote => new InlineQueryResultCachedVideo(searchResult[i], file.Id, searchResult[i]),
-                            MessageType.Voice => new InlineQueryResultCachedVoice(searchResult[i], file.Id, searchResult[i]),
-                            MessageType.Animation => new InlineQueryResultCachedGif(searchResult[i], file.Id)
+                            MessageType.Photo => new InlineQueryResultCachedPhoto(file.FileName, file.FileId),
+                            MessageType.Sticker => new InlineQueryResultCachedSticker(file.FileName, file.FileId),
+                            MessageType.Audio => new InlineQueryResultCachedAudio(file.FileName, file.FileId),
+                            MessageType.Document => new InlineQueryResultCachedDocument(file.FileName, file.FileId, file.FileName),
+                            MessageType.Video => new InlineQueryResultCachedVideo(file.FileName, file.FileId, file.FileName),
+                            MessageType.VideoNote => new InlineQueryResultCachedVideo(file.FileName, file.FileId, file.FileName),
+                            MessageType.Voice => new InlineQueryResultCachedVoice(file.FileName, file.FileId, file.FileName),
+                            MessageType.Animation => new InlineQueryResultCachedGif(file.FileName, file.FileId),
+                            _ => throw new NotImplementedException()
                         };
-#pragma warning restore CS8509 // The switch expression does not handle all possible values of its input type (it is not exhaustive).
                     }
-                    else if (_modelContext.GetText(user.ChatId, searchResult[i]) is { } text)
-                        inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
+                    //TODO: SavedText
+                    //else if (item as SavedText is { } text)
+                    //    inlineQueries[i] = new InlineQueryResultArticle(searchResult[i], searchResult[i], new InputTextMessageContent(text));
                 }
                 catch (SavedMessageNotFoundException) { }
             }
@@ -162,29 +163,33 @@ namespace SavedBot.Bot
         }
         private async Task HandleMessageAsync(Message message)
         {
-            if (message is not { }) return;
+            if (message is null) return;
 
             long chatId = message.Chat.Id;
+            long userId = message.From?.Id ?? throw new NotImplementedException();
+            string languageCode = message.From?.LanguageCode ?? defaultCulture.Name;
+            BotStrings.Culture = new CultureInfo(languageCode);
+            _logger.LogInformation("User {Id} language code: {Lang}", userId, message.From?.LanguageCode);
 #pragma warning disable  // Dereference of a possibly null reference.
-            _modelContext.AddUser(new Model.TelegramUser(message.From.Id, chatId));
+            //TODO: Save chatId only in private chat!
+            _modelContext.AddUser(new Model.TelegramUser(userId, chatId, languageCode));
 
-            BotStrings.Culture = new CultureInfo(message.From?.LanguageCode ?? defaultCulture.Name) ?? defaultCulture;
-            _logger.LogInformation("User {Id} language code: {Lang}", message.From?.Id, message.From?.LanguageCode);
+            
 
-
+            
             //TODO: Validate all of the possible Telegram size restrictions
             await (message.Type switch
             {
                 MessageType.Text => HandleTextReceivedAsync(chatId, message.Text),
-                MessageType.Photo => HandleFileReceivedAsync(chatId, message.Photo.Last().FileId, message.Type),
+                MessageType.Photo => HandleFileReceivedAsync(userId, chatId, message.Photo.Last().FileId, message.Type),
 
-                MessageType.Video => HandleFileReceivedAsync(chatId, message.Video.FileId, message.Type),
-                MessageType.Animation => HandleFileReceivedAsync(chatId, message.Animation.FileId, message.Type),
-                MessageType.Audio => HandleFileReceivedAsync(chatId, message.Audio.FileId, message.Type),
-                MessageType.Document => HandleFileReceivedAsync(chatId, message.Document.FileId, message.Type),
-                MessageType.Sticker => HandleFileReceivedAsync(chatId, message.Sticker.FileId, message.Type),
-                MessageType.VideoNote => HandleFileReceivedAsync(chatId, message.VideoNote.FileId, message.Type),
-                MessageType.Voice => HandleFileReceivedAsync(chatId, message.Voice.FileId, message.Type),
+                MessageType.Video => HandleFileReceivedAsync(userId, chatId, message.Video.FileId, message.Type),
+                MessageType.Animation => HandleFileReceivedAsync(userId, chatId, message.Animation.FileId, message.Type),
+                MessageType.Audio => HandleFileReceivedAsync(userId, chatId, message.Audio.FileId, message.Type),
+                MessageType.Document => HandleFileReceivedAsync(userId, chatId, message.Document.FileId, message.Type),
+                MessageType.Sticker => HandleFileReceivedAsync(userId, chatId, message.Sticker.FileId, message.Type),
+                MessageType.VideoNote => HandleFileReceivedAsync(userId, chatId, message.VideoNote.FileId, message.Type),
+                MessageType.Voice => HandleFileReceivedAsync(userId, chatId, message.Voice.FileId, message.Type),
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 
                 MessageType.Contact => HandleNotImplementedAsync(chatId),
@@ -193,13 +198,13 @@ namespace SavedBot.Bot
                 MessageType.Venue => HandleNotImplementedAsync(chatId),
             });
         }
-        private async Task HandleFileReceivedAsync(long chatId, string fileId, MessageType messageType)
+        private async Task HandleFileReceivedAsync(long userId, long chatId, string fileId, MessageType messageType)
         {
             try
             {
                 if (fileId is not null)
                 {
-                    _addCommandHandler.Handle(new OngoingAddFileChat(chatId, new SavedFile(fileId, messageType)));
+                    _addCommandHandler.Handle(new OngoingAddFileChat(userId, new SavedFile(string.Empty, fileId, messageType)));
                     await _client.SendTextMessageAsync(chatId, BotStrings.AddFileSaved);
                 }
             }
@@ -210,7 +215,7 @@ namespace SavedBot.Bot
         }
         private async Task HandleTextReceivedAsync(long chatId, string text)
         {
-            if (text is { })
+            if (text is not null)
             {
                 _logger.LogDebug($"Received message from {chatId}: {text}");
                 if (text.StartsWith("/")) await HandleCommandAsync(chatId, text);
@@ -278,39 +283,6 @@ namespace SavedBot.Bot
                         await _client.SendTextMessageAsync(chatId,
                             BotStrings.AddName);
                         return;
-                    }
-                    break;
-                case "/find":
-                    {
-                        if (argument is not null)
-                        {
-                            try
-                            {
-                                SavedFile file = _modelContext.GetFile(chatId, argument);
-                                if (file.FileType == MessageType.Photo)
-                                    await _client.SendPhotoAsync(chatId, InputFile.FromFileId(file.Id));
-                                else
-                                    await _client.SendDocumentAsync(chatId, InputFile.FromFileId(file.Id));
-                            }
-                            catch (SavedMessageNotFoundException)
-                            {
-                                try
-                                {
-                                    string text = _modelContext.GetText(chatId, argument);
-                                    await _client.SendTextMessageAsync(chatId, text);
-                                }
-                                catch (SavedMessageNotFoundException ex)
-                                {
-                                    await _client.SendTextMessageAsync(chatId, ex.Message);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            await _client.SendTextMessageAsync(chatId,
-                                BotStrings.FindNoName);
-                            return;
-                        }
                     }
                     break;
                 default:

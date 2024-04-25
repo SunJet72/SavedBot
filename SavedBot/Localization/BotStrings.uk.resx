@@ -141,9 +141,6 @@
   <data name="ErrorUnknownCommand" xml:space="preserve">
     <value>Невідома команда</value>
   </data>
-  <data name="FindNoName" xml:space="preserve">
-    <value>Треба вписати назву до команди /find</value>
-  </data>
   <data name="Help" xml:space="preserve">
     <value>Список моїх команд:</value>
   </data>

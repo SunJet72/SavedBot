@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
 using SavedBot.Model;
 
 namespace SavedBot.Data
@@ -13,22 +8,21 @@ namespace SavedBot.Data
         public DbSet<TelegramUser> TelegramUsers { get; set; }
         public DbSet<SavedItem> SavedItems { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
+        private string connString;
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, string _connString) : base(options) 
         { 
+            connString = _connString;
+            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=TelegramDB;Integrated Security=True;Encrypt=False;");
+            optionsBuilder.UseSqlServer(connString);
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SavedItem>()
-                .HasOne(mf => mf.User)
-                .WithMany()
-                .HasForeignKey(mf => mf.Id);
         }
     }
 }

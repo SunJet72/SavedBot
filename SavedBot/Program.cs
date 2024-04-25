@@ -1,11 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using SavedBot.Bot;
+using SavedBot.Configuration;
+using SavedBot.Data;
 using SavedBot.Exceptions;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Bot>().Build();
 
-Bot bot = Bot.BuildBot(config["TG_BOT_KEY"] ?? throw new TelegramBotTokenNotFoundException());
+AppDbContext dbContext = new AppDbContext(new Microsoft.EntityFrameworkCore.DbContextOptions<AppDbContext>(), 
+    config[UserSecretKey.ConnectionString] ?? throw new UserSecretNotFoundException(UserSecretKey.ConnectionString));
+
+Bot bot = Bot.BuildBot(config[UserSecretKey.BotKey] ?? throw new UserSecretNotFoundException(UserSecretKey.BotKey), dbContext);
 bot.StartPolling();
 
 Console.ReadLine();

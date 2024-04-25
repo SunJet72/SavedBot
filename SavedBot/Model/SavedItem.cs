@@ -9,7 +9,7 @@ namespace SavedBot.Model
     public class SavedItem
     {
         public int Id { get; set; }
-        public virtual TelegramUser User { get; set; }
+        public TelegramUser User { get; set; }
     }
 }
 

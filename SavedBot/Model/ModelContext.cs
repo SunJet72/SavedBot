@@ -1,5 +1,4 @@
 ﻿using SavedBot.Exceptions;
-using SavedBot.Loggers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,17 +13,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SavedBot.Model
 {
-    public class ModelContext : IModelContext
+    public class ModelContext(AppDbContext telegramContext) : IModelContext
     {
-        public readonly AppDbContext _dbContext;
-        public ModelContext(AppDbContext telegramContext)
-        {
-            _dbContext = telegramContext;
-        }
-       
-#pragma warning disable IDE0052 // Remove unread private members
-        private readonly ILogger _logger;
-#pragma warning restore IDE0052 // Remove unread private members
+        public readonly AppDbContext _dbContext = telegramContext;
 
         public async  Task AddText(string text)
         {
@@ -38,8 +29,8 @@ namespace SavedBot.Model
 
         public async Task AddUser(TelegramUser user)
         {
-            await _dbContext.TelegramUsers.AddAsync(user);
-            await _dbContext.SaveChangesAsync();
+            _dbContext.TelegramUsers.Add(user);
+            _dbContext.SaveChanges();
         }
 
         public async Task<TelegramUser> GetUser(long userId)

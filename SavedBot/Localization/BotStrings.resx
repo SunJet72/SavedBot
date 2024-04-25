@@ -141,9 +141,6 @@
   <data name="ErrorUnknownCommand" xml:space="preserve">
     <value>Unknown command</value>
   </data>
-  <data name="FindNoName" xml:space="preserve">
-    <value>You must pass a name to /find command</value>
-  </data>
   <data name="Help" xml:space="preserve">
     <value>Here is the list of my commands:</value>
   </data>

@@ -8,16 +8,18 @@ namespace SavedBot.Model
 {
     public class TelegramUser : IComparable<TelegramUser>
     {
-        public TelegramUser(long id, long chatId)
+        public TelegramUser() { }
+        public TelegramUser(long id, long chatId, string languageCode)
         {
             Id = id;
             ChatId = chatId;
+            LanguageCode = languageCode;
         }
 
         public long Id { get; set; }
         public long? ChatId { get; set; }
 
-        public List<SavedFile>? SavedItems { get; set; }
+        public IEnumerable<SavedItem> SavedItems { get; set; }
         
         public string LanguageCode { get; set; } = "en";
 
