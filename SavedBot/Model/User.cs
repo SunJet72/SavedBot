@@ -6,16 +6,11 @@ using System.Threading.Tasks;
 
 namespace SavedBot.Model
 {
-    public class User : IComparable<User>
+    internal class User(long id, long chatId) : IComparable<User>
     {
-        public long Id { get; private set; }
-        public long ChatId { get; private set; }
-
-        public User(long id, long chatId)
-        {
-            Id = id;
-            ChatId = chatId;
-        }
+        public long Id { get; private set; } = id;
+        public long ChatId { get; private set; } = chatId;
+        public string LanguageCode { get; set; } = "en";
 
         public int CompareTo(User? other)
         {

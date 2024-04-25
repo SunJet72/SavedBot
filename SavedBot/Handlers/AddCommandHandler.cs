@@ -1,19 +1,15 @@
-﻿using SavedBot.Chat;
+﻿using Microsoft.Extensions.Logging;
+using SavedBot.Chat;
 using SavedBot.Chat.Add;
 using SavedBot.Exceptions;
-using SavedBot.Loggers;
 using SavedBot.Model;
-using System.Reflection.Metadata.Ecma335;
 
 namespace SavedBot.Handlers
 {
-    public class AddCommandHandler : CommandHandler
+    internal class AddCommandHandler(IModelContext modelContext, ILogger logger) : CommandHandler(modelContext, logger)
     {
-        private readonly List<OngoingChat> _chats;
-        public AddCommandHandler(IModelContext modelContext, ILogger logger) : base(modelContext, logger)
-        {
-            _chats = new List<OngoingChat>();
-        }
+        private readonly List<OngoingChat> _chats = [];
+
         public override void Handle(OngoingChat chat)
         {
             switch (chat)
@@ -47,19 +43,19 @@ namespace SavedBot.Handlers
                         {
                             _chats.Remove(addChat);
                             _chats.Add(nameChat);
-                            _logger.Log($"ongoingNameChat handler: {chat.ChatId}");   
+                            _logger.LogDebug($"ongoingNameChat handler: {chat.ChatId}");   
                         }
                         return;
                     }
                 case OngoingAddChat addChat:
                     {
                         _chats.Add(addChat);
-                        _logger.Log($"ongoingAddChat handler: {chat.ChatId}");
+                        _logger.LogDebug($"ongoingAddChat handler: {chat.ChatId}");
                         return;
                     }
                 default:
                     {
-                        _logger.Log($"ongoingChat handler: {chat.ChatId}");
+                        _logger.LogDebug($"ongoingChat handler: {chat.ChatId}");
                     }
                     break;                  
             }

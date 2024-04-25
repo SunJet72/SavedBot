@@ -3,7 +3,7 @@ using SavedBot.Exceptions;
 
 namespace SavedBot.Handlers
 {
-    public interface ICommandHandler
+    internal interface ICommandHandler
     {
         /// <summary>
         /// Handles a command

@@ -1,31 +1,18 @@
-﻿using SavedBot.Exceptions;
-using SavedBot.Loggers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Telegram.Bot.Types;
-using static System.Net.Mime.MediaTypeNames;
+﻿using Microsoft.Extensions.Logging;
+using SavedBot.Exceptions;
+
 
 namespace SavedBot.Model
 {
-    public class MockModelContext : IModelContext
+    internal class MockModelContext(ILogger logger) : IModelContext
     {
-        private readonly Dictionary<long, Dictionary<string, SavedFile>> _files;
-        private readonly Dictionary<long, Dictionary<string, string>> _textes;
-        private readonly List<User> _users;
+        private readonly Dictionary<long, Dictionary<string, SavedFile>> _files = [];
+        private readonly Dictionary<long, Dictionary<string, string>> _textes = [];
+        private readonly List<User> _users = [];
 #pragma warning disable IDE0052 // Remove unread private members
-        private readonly ILogger _logger;
+        private readonly ILogger _logger = logger;
+
 #pragma warning restore IDE0052 // Remove unread private members
-        public MockModelContext(ILogger logger)
-        {
-            _files = new Dictionary<long, Dictionary<string, SavedFile>>();
-            _textes = new Dictionary<long, Dictionary<string, string>>();
-            _users = new List<User>();
-            _logger = logger;
-        }
         private bool CheckNameAvailability(long chatId, string name)
         {
             if (_textes.TryGetValue(chatId, out Dictionary<string, string>? savedText))
@@ -81,7 +68,7 @@ namespace SavedBot.Model
 
         public IEnumerable<string> Search(long chatId, string partial, int limit)
         {
-            IEnumerable<string> result = Array.Empty<string>();
+            IEnumerable<string> result = [];
 
             if (_files.TryGetValue(chatId, out Dictionary<string, SavedFile>? savedFiles))
             {

@@ -1,11 +1,7 @@
 ﻿namespace SavedBot.Chat
 {
-    public abstract class OngoingChat
+    internal abstract class OngoingChat(long chatId)
     {
-        public long ChatId { get; private set; }
-        public OngoingChat(long chatId)
-        {
-            ChatId = chatId;
-        }
+        public long ChatId { get; private set; } = chatId;
     }
 }

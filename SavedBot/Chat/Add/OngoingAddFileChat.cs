@@ -2,12 +2,8 @@
 
 namespace SavedBot.Chat.Add
 {
-    public class OngoingAddFileChat : OngoingChat
+    internal class OngoingAddFileChat(long chatId, SavedFile file) : OngoingChat(chatId)
     {
-        public SavedFile File { get; private set; }
-        public OngoingAddFileChat(long chatId, SavedFile file) : base(chatId)
-        {
-            File = file;
-        }
+        public SavedFile File { get; private set; } = file;
     }
 }
