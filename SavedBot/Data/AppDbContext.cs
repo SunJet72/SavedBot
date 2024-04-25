@@ -9,8 +9,11 @@ namespace SavedBot.Data
         public DbSet<SavedItem> SavedItems { get; set; }
 
         private string connString;
+        public DbSet<SavedFile> SavedFiles { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options, string _connString) : base(options) 
+        public DbSet<SavedText> SavedTexts { get; set; }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, string _connString) : base(options)
         { 
             connString = _connString;
             Database.EnsureDeleted();

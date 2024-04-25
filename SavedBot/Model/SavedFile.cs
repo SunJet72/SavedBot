@@ -2,6 +2,7 @@
 
 namespace SavedBot.Model
 {
+    [Table("SavedFiles")]
     public class SavedFile : SavedItem
     {
         public string FileId { get; set; }
