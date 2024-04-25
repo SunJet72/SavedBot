@@ -21,6 +21,16 @@ namespace SavedBot.Model
         {
             if (item is SavedFile file)
             {
+                var existingUser = await _dbContext.TelegramUsers.FindAsync(file.User.Id);
+                if (existingUser != null)
+                {
+                    file.User = existingUser;
+                }
+                else
+                {
+                    _dbContext.TelegramUsers.Add(file.User);
+                }
+
                 await _dbContext.SavedFiles.AddAsync(file);
             }
             else if (item is SavedText text)
