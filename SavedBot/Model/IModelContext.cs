@@ -14,7 +14,6 @@ namespace SavedBot.Model
         /// <param name="name">Custom name of the saved file</param>
         /// <param name="fileId">Telegram File Id</param>
         /// <exception cref="NameAlreadyExistsException"></exception>
-        Task AddFile(SavedFile file);
         /// <summary>
         /// Adds saved text to the Model container
         /// </summary>
@@ -22,7 +21,7 @@ namespace SavedBot.Model
         /// <param name="name">Custom name of the saved text</param>
         /// <param name="text">Saved text</param>
         /// <exception cref="NameAlreadyExistsException"></exception>
-        Task AddText(string text);
+        Task AddItem(SavedItem item);
         /// <summary>
         /// Add new user
         /// </summary>

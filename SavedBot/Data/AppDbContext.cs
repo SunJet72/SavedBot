@@ -13,6 +13,10 @@ namespace SavedBot.Data
         public DbSet<TelegramUser> TelegramUsers { get; set; }
         public DbSet<SavedItem> SavedItems { get; set; }
 
+        public DbSet<SavedFile> SavedFiles { get; set; }
+
+        public DbSet<SavedText> SavedTexts { get; set; }
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { 
             Database.EnsureCreated();

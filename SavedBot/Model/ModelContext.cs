@@ -26,15 +26,19 @@ namespace SavedBot.Model
         private readonly ILogger _logger;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public async  Task AddText(string text)
+        public async Task AddItem(SavedItem item)
         {
+            if (item is SavedFile file)
+            {
+                await _dbContext.SavedFiles.AddAsync(file);
+            }
+            else if (item is SavedText text)
+            {
+                await _dbContext.SavedTexts.AddAsync(text);
+            }
 
-        }
-        public async Task AddFile(SavedFile file)
-        {
-            await _dbContext.SavedItems.AddAsync(file);
             await _dbContext.SaveChangesAsync();
-        } 
+        }
 
         public async Task AddUser(TelegramUser user)
         {
@@ -49,15 +53,20 @@ namespace SavedBot.Model
 
         public async Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit)
         {
-            IQueryable<SavedItem> savedFilesQuery = _dbContext.SavedItems
-                                                    .OfType<SavedFile>()
-                                                    .Include(sf => sf.User)
-                                                    .Where(sf => sf.User.Id == user.Id && sf.FileName.Contains(partial))
-                                                    .Take(limit);
+            var savedFiles = _dbContext.SavedFiles
+                .Where(f => f.User == user)
+                .Where(f => EF.Functions.Like(f.FileName, $"%{partial}%"))
+                .OfType<SavedItem>()
+                .Take(limit);
 
-            List<SavedItem> savedFiles = await savedFilesQuery.ToListAsync();
+            var savedTexts = _dbContext.SavedTexts
+                .Where(t => t.User == user)
+                .Where(t => EF.Functions.Like(t.Text, $"%{partial}%"))
+                .OfType<SavedItem>()
+                .Take(limit);
 
-            return savedFiles.AsQueryable();
+
+            return savedFiles.Union(savedTexts).AsQueryable();
         }
 
     }
