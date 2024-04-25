@@ -21,7 +21,11 @@ namespace SavedBot.Handlers
 
                         if (_chats.Find((c) => c.UserId == addFileChat.UserId) is OngoingNameChat addChat)
                         {
-                            _modelContext.AddFile(addFileChat.File);
+                            addFileChat.File.FileName = addChat.Name;
+                            addFileChat.File.User = new TelegramUser() { Id = addFileChat.UserId };
+
+
+                            _modelContext.AddItemAsync(addFileChat.File);
                             _chats.Remove(addChat);
                         }
                         else throw new NotFoundOngoingAddChatException();

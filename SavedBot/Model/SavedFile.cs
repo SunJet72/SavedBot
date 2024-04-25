@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Telegram.Bot.Types.Enums;
 
 namespace SavedBot.Model
 {

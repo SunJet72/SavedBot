@@ -17,7 +17,7 @@ namespace SavedBot.Model
     {
         public readonly AppDbContext _dbContext = telegramContext;
 
-        public async Task AddItem(SavedItem item)
+        public async Task AddItemAsync(SavedItem item)
         {
             if (item is SavedFile file)
             {
@@ -31,33 +31,35 @@ namespace SavedBot.Model
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task AddUser(TelegramUser user)
+        public async Task AddUserAsync(TelegramUser user)
         {
-            _dbContext.TelegramUsers.Add(user);
-            _dbContext.SaveChanges();
+            await _dbContext.TelegramUsers.AddAsync(user);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<TelegramUser> GetUser(long userId)
+        public async Task<TelegramUser?> GetUserAsync(long userId)
         {
             return await _dbContext.TelegramUsers.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
-        public async Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit)
+        public async Task<IEnumerable<SavedItem>> Search(TelegramUser user, string partial, int limit)
         {
-            var savedFiles = _dbContext.SavedFiles
+            List<SavedItem> savedFiles = _dbContext.SavedFiles
                 .Where(f => f.User == user)
                 .Where(f => EF.Functions.Like(f.FileName, $"%{partial}%"))
                 .OfType<SavedItem>()
-                .Take(limit);
+                .Take(limit)
+                .ToList();
 
-            var savedTexts = _dbContext.SavedTexts
+            List<SavedItem> savedTexts = _dbContext.SavedTexts
                 .Where(t => t.User == user)
                 .Where(t => EF.Functions.Like(t.Text, $"%{partial}%"))
                 .OfType<SavedItem>()
-                .Take(limit);
+                .Take(limit)
+                .ToList();
 
 
-            return savedFiles.Union(savedTexts).AsQueryable();
+            return savedFiles.Union(savedTexts);
         }
 
     }

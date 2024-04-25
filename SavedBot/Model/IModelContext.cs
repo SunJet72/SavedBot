@@ -21,17 +21,17 @@ namespace SavedBot.Model
         /// <param name="name">Custom name of the saved text</param>
         /// <param name="text">Saved text</param>
         /// <exception cref="NameAlreadyExistsException"></exception>
-        Task AddItem(SavedItem item);
+        Task AddItemAsync(SavedItem item);
         /// <summary>
         /// Add new user
         /// </summary>
         /// <param name="user"></param>
-        Task AddUser(TelegramUser user);
+        Task AddUserAsync(TelegramUser user);
         /// <summary>
         /// Get existing User by his Id
         /// </summary>
         /// <param name="userId"></param>
-        Task<TelegramUser> GetUser(long userId);
+        Task<TelegramUser?> GetUserAsync(long userId);
         /// <summary>
         /// Get existing User by his ChatId
         /// </summary>
@@ -51,6 +51,6 @@ namespace SavedBot.Model
         /// <param name="chatId"></param>
         /// <param name="partial"></param>
         /// <returns></returns>
-        Task<IQueryable<SavedItem>> Search(TelegramUser user, string partial, int limit);
+        Task<IEnumerable<SavedItem>> Search(TelegramUser user, string partial, int limit);
     }
 }

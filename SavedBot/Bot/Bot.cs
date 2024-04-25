@@ -111,7 +111,7 @@ namespace SavedBot.Bot
         private async Task HandleInlineQueryAsync(InlineQuery inlineQuery)
         {
             if (inlineQuery is null) return;
-            TelegramUser? user = await _modelContext.GetUser(inlineQuery.From.Id);
+            TelegramUser? user = await _modelContext.GetUserAsync(inlineQuery.From.Id);
 
             //Changing the culture for the ResourceManager to find the right localization
             BotStrings.Culture = new CultureInfo(user?.LanguageCode ?? defaultCulture.Name) ?? defaultCulture;
@@ -172,7 +172,7 @@ namespace SavedBot.Bot
             _logger.LogInformation("User {Id} language code: {Lang}", userId, message.From?.LanguageCode);
 #pragma warning disable  // Dereference of a possibly null reference.
             //TODO: Save chatId only in private chat!
-            _modelContext.AddUser(new Model.TelegramUser(userId, chatId, languageCode));
+            _modelContext.AddUserAsync(new Model.TelegramUser(userId, chatId, languageCode));
 
             
 

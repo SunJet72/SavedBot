@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SavedBot.Model;
 
 namespace SavedBot.Data
@@ -13,7 +14,7 @@ namespace SavedBot.Data
 
         public DbSet<SavedText> SavedTexts { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options, string _connString) : base(options)
+        public AppDbContext(string _connString)
         { 
             connString = _connString;
             Database.EnsureDeleted();
@@ -21,8 +22,11 @@ namespace SavedBot.Data
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlServer(connString);
+            optionsBuilder.UseLoggerFactory(LoggerFactory.Create(builder =>
+            {
+                builder.AddSimpleConsole();    // указываем наш провайдер логгирования
+            }));
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
