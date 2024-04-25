@@ -1,14 +1,11 @@
-﻿using SavedBot;
-using SavedBot.Loggers;
-using SavedBot.Model;
-using System.Text;
-string token = "Your token";
+﻿using Microsoft.Extensions.Configuration;
+using SavedBot.Bot;
+using SavedBot.Exceptions;
 
-ILogger logger = new ConsoleLogger();
-IModelContext context = new ModelContext(logger);
-Console.InputEncoding = Encoding.UTF8;
-Console.OutputEncoding = Encoding.UTF8;
-Bot bot = new(token, context, logger);
-bot.Start();
+var config = new ConfigurationBuilder()
+    .AddUserSecrets<Bot>().Build();
+
+Bot bot = Bot.BuildBot(config["TG_BOT_KEY"] ?? throw new TelegramBotTokenNotFoundException());
+bot.StartPolling();
 
 Console.ReadLine();

@@ -3,7 +3,7 @@ using SavedBot.Exceptions;
 
 namespace SavedBot.Handlers
 {
-    public interface ICommandHandler
+    internal interface ICommandHandler
     {
         /// <summary>
         /// Handles a command
@@ -11,5 +11,7 @@ namespace SavedBot.Handlers
         /// <param name="ongoingChat"></param>
         /// <exception cref="NotFoundOngoingAddChatException"></exception>
         public void Handle(OngoingChat ongoingChat);
+        //TODO: Remove
+        public bool IsNamed(long chatId);
     }
 }

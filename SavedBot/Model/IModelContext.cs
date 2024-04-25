@@ -5,7 +5,7 @@ using SavedBot.Model;
 
 namespace SavedBot.Model
 {
-    public interface IModelContext
+    internal interface IModelContext
     {
         /// <summary>
         /// Adds saved file to the Model container

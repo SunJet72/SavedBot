@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SavedBot", "SavedBot\SavedBot.csproj", "{F892EC7D-5CA6-440E-A6C1-EB7255DB5A6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavedBotWebhook", "SavedBotWebhook\SavedBotWebhook.csproj", "{F1DC690A-67CE-41D6-853A-3C7CE76E837A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F892EC7D-5CA6-440E-A6C1-EB7255DB5A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F892EC7D-5CA6-440E-A6C1-EB7255DB5A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F892EC7D-5CA6-440E-A6C1-EB7255DB5A6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1DC690A-67CE-41D6-853A-3C7CE76E837A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1DC690A-67CE-41D6-853A-3C7CE76E837A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1DC690A-67CE-41D6-853A-3C7CE76E837A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1DC690A-67CE-41D6-853A-3C7CE76E837A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
