@@ -19,18 +19,17 @@ namespace SavedBot.Model
 
         public async Task AddItemAsync(SavedItem item)
         {
+            TelegramUser existingUser = await _dbContext.TelegramUsers.FindAsync(item.User.Id);
+            if (existingUser != null)
+            {
+                item.User = existingUser;
+            }
+            else
+            {
+                _dbContext.TelegramUsers.Add(item.User);
+            }
             if (item is SavedFile file)
             {
-                var existingUser = await _dbContext.TelegramUsers.FindAsync(file.User.Id);
-                if (existingUser != null)
-                {
-                    file.User = existingUser;
-                }
-                else
-                {
-                    _dbContext.TelegramUsers.Add(file.User);
-                }
-
                 await _dbContext.SavedFiles.AddAsync(file);
             }
             else if (item is SavedText text)

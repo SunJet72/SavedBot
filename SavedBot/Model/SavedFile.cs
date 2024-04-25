@@ -10,6 +10,7 @@ namespace SavedBot.Model
 
         public string FileName { get; set; }
         public MessageType FileType { get; set; }
+
         public SavedFile() { }
         public SavedFile(string name, string id, MessageType fileType)
         {
