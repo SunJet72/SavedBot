@@ -1,30 +1,31 @@
-﻿using SavedBot.Chat;
+﻿using Microsoft.Extensions.Logging;
+using SavedBot.Chat;
 using SavedBot.Chat.Add;
 using SavedBot.Exceptions;
-using SavedBot.Loggers;
 using SavedBot.Model;
-using System.Reflection.Metadata.Ecma335;
+using Telegram.Bot.Types;
 
 namespace SavedBot.Handlers
 {
-    public class AddCommandHandler : CommandHandler
+    internal class AddCommandHandler(IModelContext modelContext, ILogger logger) : CommandHandler(modelContext, logger)
     {
-        private readonly List<OngoingChat> _chats;
-        public AddCommandHandler(IModelContext modelContext, ILogger logger) : base(modelContext, logger)
-        {
-            _chats = new List<OngoingChat>();
-        }
-        public override void Handle(OngoingChat chat)
+        private readonly List<OngoingChat> _chats = [];
+
+        public override async void Handle(OngoingChat chat)
         {
             switch (chat)
             {
                 case OngoingAddFileChat addFileChat:
                     {
-                        Console.WriteLine($"ongoingAddFileChat handler: {addFileChat.ChatId }");
+                        Console.WriteLine($"ongoingAddFileChat handler: {addFileChat.UserId }");
 
-                        if (_chats.Find((c) => c.ChatId == addFileChat.ChatId) is OngoingNameChat addChat)
+                        if (_chats.Find((c) => c.UserId == addFileChat.UserId) is OngoingNameChat addChat)
                         {
-                            _modelContext.AddFile(addFileChat.ChatId, addChat.Name, addFileChat.File);
+                            addFileChat.File.FileName = addChat.Name;
+                            addFileChat.File.User = new TelegramUser() { Id = addFileChat.UserId };
+
+
+                            await _modelContext.AddItemAsync(addFileChat.File);
                             _chats.Remove(addChat);
                         }
                         else throw new NotFoundOngoingAddChatException();
@@ -32,10 +33,11 @@ namespace SavedBot.Handlers
                     break;
                 case OngoingAddTextChat addTextChat:
                     {
-                        Console.WriteLine($"ongoingAddTextChat handler: {addTextChat.ChatId }");
-                        if (_chats.Find((c) => c.ChatId == addTextChat.ChatId) is OngoingNameChat nameChat)
+                        Console.WriteLine($"ongoingAddTextChat handler: {addTextChat.UserId }");
+                        if (_chats.Find((c) => c.UserId == addTextChat.UserId) is OngoingNameChat nameChat)
                         {
-                            _modelContext.AddText(addTextChat.ChatId, nameChat.Name, addTextChat.Text);
+                            //TODO: SavedText
+                            //_modelContext.AddText(addTextChat.UserId, nameChat.Name, addTextChat.Text);
                             _chats.Remove(nameChat);
                         }
                         else throw new NotFoundOngoingAddChatException();
@@ -43,23 +45,23 @@ namespace SavedBot.Handlers
                     break;
                 case OngoingNameChat nameChat:
                     {
-                        if (_chats.Find((c) => c.ChatId == nameChat.ChatId) is OngoingAddChat addChat)
+                        if (_chats.Find((c) => c.UserId == nameChat.UserId) is OngoingAddChat addChat)
                         {
                             _chats.Remove(addChat);
                             _chats.Add(nameChat);
-                            _logger.Log($"ongoingNameChat handler: {chat.ChatId}");   
+                            _logger.LogDebug("ongoingNameChat handler: {UserId}", chat.UserId);   
                         }
                         return;
                     }
                 case OngoingAddChat addChat:
                     {
                         _chats.Add(addChat);
-                        _logger.Log($"ongoingAddChat handler: {chat.ChatId}");
+                        _logger.LogDebug("ongoingAddChat handler: {UserId}", chat.UserId);
                         return;
                     }
                 default:
                     {
-                        _logger.Log($"ongoingChat handler: {chat.ChatId}");
+                        _logger.LogDebug("ongoingChat handler: {UserId}", chat.UserId);
                     }
                     break;                  
             }
@@ -67,7 +69,7 @@ namespace SavedBot.Handlers
 
         public override bool IsNamed(long chatId)
         {
-             bool res = _chats.First((c) => c.ChatId == chatId) switch
+             bool res = _chats.First((c) => c.UserId == chatId) switch
              {
                 OngoingAddFileChat or OngoingAddTextChat => true,
                 _ => false

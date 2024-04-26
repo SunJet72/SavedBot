@@ -1,21 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
-using SavedBot;
-using SavedBot.Loggers;
-using SavedBot.Model;
-using System.Text;
+using SavedBot.Bot;
+using SavedBot.Configuration;
+using SavedBot.Data;
+using SavedBot.Exceptions;
 
 var config = new ConfigurationBuilder()
-    .AddUserSecrets<Program>()
-    .Build();
+    .AddUserSecrets<Bot>().Build();
 
-string token = config["TG_BOT_KEY"];
+AppDbContext dbContext = new AppDbContext(config[UserSecretKey.ConnectionString] ?? throw new UserSecretNotFoundException(UserSecretKey.ConnectionString));
 
-ILogger logger = new ConsoleLogger();
-IModelContext context = new MockModelContext(logger);
-Console.InputEncoding = Encoding.UTF8;
-Console.OutputEncoding = Encoding.UTF8;
-
-Bot bot = new(token, context, logger);
-bot.Start();
+Bot bot = Bot.BuildBot(config[UserSecretKey.BotKey] ?? throw new UserSecretNotFoundException(UserSecretKey.BotKey), dbContext);
+bot.StartPolling();
 
 Console.ReadLine();

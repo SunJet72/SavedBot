@@ -1,12 +1,7 @@
 ﻿namespace SavedBot.Chat.Add
 {
-    public class OngoingNameChat : OngoingChat
+    internal class OngoingNameChat(long userId, string name) : OngoingChat(userId)
     {
-        public string Name { get; private set; }
-        public OngoingNameChat(long chatId, string name) : base(chatId)
-        {
-            Name = name;
-        }
-
+        public string Name { get; private set; } = name;
     }
 }

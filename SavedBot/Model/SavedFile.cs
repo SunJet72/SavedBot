@@ -1,21 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Telegram.Bot.Types.Enums;
 
 namespace SavedBot.Model
 {
-    public class SavedFile
+    [Table("SavedFiles")]
+    public class SavedFile : SavedItem
     {
-        public string Id { get; set; }
-        //TODO: Our own FileType enum
+        public string FileId { get; set; }
+
+        public string FileName { get; set; }
         public MessageType FileType { get; set; }
-        public SavedFile(/*string name,*/ string id, MessageType fileType)// : base(name)
+
+        public SavedFile() { }
+        public SavedFile(string name, string id, MessageType fileType)
         {
-            Id = id;
-            FileType = fileType;
+            this.FileName = name;
+            this.FileId = id;
+            this.FileType = fileType;
         }
     }
 }
