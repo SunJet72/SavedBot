@@ -149,20 +149,20 @@ namespace SavedBot.Model
 
         public async Task<IEnumerable<SavedItem>> Search(TelegramUser user, string partial, int limit)
         {
-            var savedFilesQuery = _dbContext.SavedFiles
+            IQueryable<SavedItem> savedFilesQuery = _dbContext.SavedFiles
                 .Where(f => f.User == user)
                 .Where(f => f.FileName.Contains(partial))
                 .OfType<SavedItem>()
                 .Take(limit);
 
-            var savedTextsQuery = _dbContext.SavedTexts
+            IQueryable<SavedItem> savedTextsQuery = _dbContext.SavedTexts
                 .Where(t => t.User == user)
                 .Where(t => t.Text.Contains(partial))
                 .OfType<SavedItem>()
                 .Take(limit);
 
-            var savedFiles = await savedFilesQuery.ToListAsync();
-            var savedTexts = await savedTextsQuery.ToListAsync();
+            List<SavedItem> savedFiles = await savedFilesQuery.ToListAsync();
+            List<SavedItem> savedTexts = await savedTextsQuery.ToListAsync();
 
             return savedFiles.Union(savedTexts);
         }
