@@ -26,6 +26,16 @@ namespace SavedBot.Model
         /// Add new user
         /// </summary>
         /// <param name="user"></param>
+        /// 
+        Task ChangeLanguage(TelegramUser user);
+
+        Task<bool> ItemExists(SavedItem item);
+
+        Task<bool> UserExists(long userId);
+
+        Task RenameFile(SavedFile file);
+
+        Task RemoveItem(SavedItem item);
         Task AddUserAsync(TelegramUser user);
         /// <summary>
         /// Get existing User by his Id

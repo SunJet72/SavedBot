@@ -40,6 +40,92 @@ namespace SavedBot.Model
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task RemoveItem(SavedItem item)
+        {
+            if (item is SavedFile file)
+            {
+                SavedFile? fileToRemove = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileId == file.FileId);
+
+#pragma warning disable CS8604 // Possible null reference argument.
+                _dbContext.SavedFiles.Attach(fileToRemove);
+                _dbContext.SavedFiles.Remove(fileToRemove);
+#pragma warning restore CS8604 // Possible null reference argument.
+
+            }
+            else if (item is SavedText text)
+            {
+                SavedText? textToRemove = await _dbContext.SavedTexts.FirstOrDefaultAsync(x => x.Text == text.Text);
+#pragma warning disable CS8604 // Possible null reference argument.
+                _dbContext.SavedTexts.Attach(textToRemove);
+                _dbContext.SavedTexts.Remove(textToRemove);
+#pragma warning restore CS8604 // Possible null reference argument.
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task RenameFile(SavedFile file)
+        {
+                SavedFile? fileToRename = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileId == file.FileId);
+
+                SavedFile? updatedFile = new SavedFile
+                {
+                    FileId = fileToRename.FileId,
+                    FileType = fileToRename.FileType,
+                    FileName = file.FileName
+                };
+                _dbContext.Entry(fileToRename).CurrentValues.SetValues(updatedFile);
+
+                _dbContext.Entry(fileToRename).State = EntityState.Modified;
+
+                await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task ChangeLanguage(TelegramUser user)
+        {
+            TelegramUser? userToChange = await _dbContext.TelegramUsers.FirstOrDefaultAsync(u => u.Id == user.Id);
+
+            userToChange.LanguageCode = user.LanguageCode;
+
+
+            _dbContext.Entry(userToChange).State = EntityState.Modified;
+
+            await _dbContext.SaveChangesAsync();
+
+        }
+        public async Task<bool> ItemExists(SavedItem item)
+        {
+            if (item is SavedFile file)
+            {
+                SavedFile? fileToCheck = await _dbContext.SavedFiles.FirstOrDefaultAsync(f => f.FileId == file.FileId);
+
+                return fileToCheck != null;
+            }
+            else if (item is SavedText text)
+            {
+                SavedText? textToCheck = await _dbContext.SavedTexts.FirstOrDefaultAsync(t => t.Text == text.Text);
+
+                return textToCheck != null;
+            }
+            else
+            {
+                throw new ArgumentException("The provided item is neither SavedFile nor SavedText");
+            }
+        }
+
+        public async Task<bool> UserExists(long userId)
+        {
+            TelegramUser userCheck = await _dbContext.TelegramUsers.FirstOrDefaultAsync(x => x.Id == userId);
+            if (userCheck != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public async Task AddUserAsync(TelegramUser user)
         {
             TelegramUser existingUser = await _dbContext.TelegramUsers.FindAsync(user.Id);
