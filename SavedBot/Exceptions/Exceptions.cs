@@ -15,8 +15,8 @@ namespace SavedBot.Exceptions
     /// <summary>
     /// Thrown if the sequence of a command is broken
     /// </summary>
-    internal class NotFoundOngoingAddChatException() :
-        Exception("You should call /add command first to add new item to list");
+    internal class OngoingChatNotFoundException() :
+        Exception("Command sequence is broken");
 
     /// <summary>
     /// Thrown if the saved message is not found by the specified name

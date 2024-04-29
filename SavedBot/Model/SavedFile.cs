@@ -12,11 +12,11 @@ namespace SavedBot.Model
         public MessageType FileType { get; set; }
 
         public SavedFile() { }
-        public SavedFile(string name, string id, MessageType fileType)
+        public SavedFile(string name, string id, MessageType fileType, TelegramUser user) : base(user)
         {
-            this.FileName = name;
-            this.FileId = id;
-            this.FileType = fileType;
+            FileName = name;
+            FileId = id;
+            FileType = fileType;
         }
     }
 }

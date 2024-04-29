@@ -32,7 +32,7 @@ namespace SavedBot.Bot
         private readonly ILogger _logger;
         private readonly IModelContext _modelContext;
 
-        private readonly AddCommandHandler _addCommandHandler;
+        private readonly CommandHandler _addCommandHandler;
         #endregion
 
         #region Constructors
@@ -58,7 +58,7 @@ namespace SavedBot.Bot
             _client = new TelegramBotClient(new TelegramBotClientOptions(token));
 
             _logger = logger;
-            _addCommandHandler = new AddCommandHandler(modelContext, logger);
+            _addCommandHandler = new CommandHandler(modelContext, logger);
             _modelContext = modelContext;
 
             botInfo = _client.GetMeAsync().Result;
@@ -128,7 +128,7 @@ namespace SavedBot.Bot
             _logger.LogDebug("Searching by query: {Query}", inlineQuery.Query);
 
 
-            IEnumerable<SavedItem> searchResult = await _modelContext.Search(user, inlineQuery.Query, searchLimit);
+            IEnumerable<SavedItem> searchResult = await _modelContext.SearchAsync(user, inlineQuery.Query, searchLimit);
             InlineQueryResult[] inlineQueries = new InlineQueryResult[searchResult.Count()];
 
             int i = 0;
@@ -174,9 +174,6 @@ namespace SavedBot.Bot
             //TODO: Save chatId only in private chat!
             _modelContext.AddUserAsync(new Model.TelegramUser(userId, chatId, languageCode));
 
-            
-
-            
             //TODO: Validate all of the possible Telegram size restrictions
             await (message.Type switch
             {
@@ -204,7 +201,7 @@ namespace SavedBot.Bot
             {
                 if (fileId is not null)
                 {
-                    _addCommandHandler.Handle(new OngoingAddFileChat(userId, new SavedFile(string.Empty, fileId, messageType)));
+                    _addCommandHandler.HandleAsync(new OngoingAddFileChat(userId, new SavedFile(string.Empty, fileId, messageType)));
                     await _client.SendTextMessageAsync(chatId, BotStrings.AddFileSaved);
                 }
             }
@@ -225,12 +222,12 @@ namespace SavedBot.Bot
                     {
                         if (_addCommandHandler.IsNamed(chatId))
                         {
-                            _addCommandHandler.Handle(new OngoingAddTextChat(chatId, text));
+                            _addCommandHandler.HandleAsync(new AddTextOngoingChat(chatId, text));
                             await _client.SendTextMessageAsync(chatId, BotStrings.AddTextSaved);
                         }
                         else
                         {
-                            _addCommandHandler.Handle(new OngoingNameChat(chatId, text));
+                            _addCommandHandler.HandleAsync(new AddFileNameOngoingChat(chatId, text));
                             await _client.SendTextMessageAsync(chatId, BotStrings.AddSend);
                         }
                     }
@@ -275,14 +272,6 @@ namespace SavedBot.Bot
                     {
                         await _client.SendTextMessageAsync(chatId, BotStrings.Help + "\n" +
                             BotStrings.HelpCommands.Replace(';', '\n'));
-                    }
-                    break;
-                case "/add":
-                    {
-                        _addCommandHandler.Handle(new OngoingAddChat(chatId));
-                        await _client.SendTextMessageAsync(chatId,
-                            BotStrings.AddName);
-                        return;
                     }
                     break;
                 default:

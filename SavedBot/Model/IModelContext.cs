@@ -27,40 +27,28 @@ namespace SavedBot.Model
         /// </summary>
         /// <param name="user"></param>
         /// 
-        Task ChangeLanguage(TelegramUser user);
+        Task ChangeLanguageAsync(TelegramUser user);
 
-        Task<bool> ItemExists(SavedItem item);
+        Task<bool> ItemExistsAsync(SavedItem item);
 
-        Task<bool> UserExists(long userId);
+        Task<bool> UserExistsAsync(long userId);
 
-        Task RenameFile(SavedFile file);
+        Task RenameFileAsync(SavedFile file);
 
-        Task RemoveItem(SavedItem item);
+        Task RemoveItemAsync(SavedItem item);
         Task AddUserAsync(TelegramUser user);
         /// <summary>
         /// Get existing User by his Id
         /// </summary>
         /// <param name="userId"></param>
         Task<TelegramUser?> GetUserAsync(long userId);
-        /// <summary>
-        /// Get existing User by his ChatId
-        /// </summary>
-        /// <param name="chatId"></param>
 
-        // SavedFile FindFile(long chatId, string name);
-        /// <summary>
-        /// Returns found saved text or throws an exception
-        /// </summary>
-        /// <param name="chatId">Telegram Chat Id</param>
-        /// <param name="name">Custom name of the saved text</param>
-        /// <exception cref="SavedMessageNotFoundException"></exception>
-        // string FindText(long chatId, string name);
         /// <summary>
         /// Searches for the saved messages which names contain the partial
         /// </summary>
         /// <param name="chatId"></param>
         /// <param name="partial"></param>
         /// <returns></returns>
-        Task<IEnumerable<SavedItem>> Search(TelegramUser user, string partial, int limit);
+        Task<IEnumerable<SavedItem>> SearchAsync(TelegramUser user, string partial, int limit);
     }
 }

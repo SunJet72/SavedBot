@@ -14,7 +14,7 @@ Bot bot = Bot.BuildBot(builder.Configuration[UserSecretKey.BotKey] ?? throw new 
 bot.SetWebhook(builder.Configuration[UserSecretKey.WebhookUrl] ?? throw new UserSecretNotFoundException(UserSecretKey.WebhookUrl));
 
 builder.Services.AddSingleton(bot);
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 app.MapControllers();

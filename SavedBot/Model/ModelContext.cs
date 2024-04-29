@@ -40,7 +40,7 @@ namespace SavedBot.Model
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task RemoveItem(SavedItem item)
+        public async Task RemoveItemAsync(SavedItem item)
         {
             if (item is SavedFile file)
             {
@@ -64,7 +64,7 @@ namespace SavedBot.Model
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task RenameFile(SavedFile file)
+        public async Task RenameFileAsync(SavedFile file)
         {
                 SavedFile? fileToRename = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileId == file.FileId);
 
@@ -81,7 +81,7 @@ namespace SavedBot.Model
                 await _dbContext.SaveChangesAsync();
         }
 
-        public async Task ChangeLanguage(TelegramUser user)
+        public async Task ChangeLanguageAsync(TelegramUser user)
         {
             TelegramUser? userToChange = await _dbContext.TelegramUsers.FirstOrDefaultAsync(u => u.Id == user.Id);
 
@@ -93,7 +93,7 @@ namespace SavedBot.Model
             await _dbContext.SaveChangesAsync();
 
         }
-        public async Task<bool> ItemExists(SavedItem item)
+        public async Task<bool> ItemExistsAsync(SavedItem item)
         {
             if (item is SavedFile file)
             {
@@ -103,7 +103,7 @@ namespace SavedBot.Model
             }
             else if (item is SavedText text)
             {
-                SavedText? textToCheck = await _dbContext.SavedTexts.FirstOrDefaultAsync(t => t.Text == text.Text);
+                SavedText? textToCheck = await _dbContext.SavedTexts.FirstOrDefaultAsync(t => t.Text.Equals(text.Text));
 
                 return textToCheck != null;
             }
@@ -113,7 +113,7 @@ namespace SavedBot.Model
             }
         }
 
-        public async Task<bool> UserExists(long userId)
+        public async Task<bool> UserExistsAsync(long userId)
         {
             TelegramUser userCheck = await _dbContext.TelegramUsers.FirstOrDefaultAsync(x => x.Id == userId);
             if (userCheck != null)
@@ -147,22 +147,21 @@ namespace SavedBot.Model
             return await _dbContext.TelegramUsers.FirstOrDefaultAsync(u => u.Id == userId);
         }
 
-        public async Task<IEnumerable<SavedItem>> Search(TelegramUser user, string partial, int limit)
+        public async Task<IEnumerable<SavedItem>> SearchAsync(TelegramUser user, string partial, int limit)
         {
-            IQueryable<SavedItem> savedFilesQuery = _dbContext.SavedFiles
-                .Where(f => f.User == user)
+            List<SavedItem> savedFiles = await _dbContext.SavedFiles
+                .Where(f => f.User.Id == user.Id)
                 .Where(f => f.FileName.Contains(partial))
                 .OfType<SavedItem>()
-                .Take(limit);
+                .Take(limit)
+                .ToListAsync();
 
-            IQueryable<SavedItem> savedTextsQuery = _dbContext.SavedTexts
-                .Where(t => t.User == user)
+            List<SavedItem> savedTexts = await _dbContext.SavedTexts
+                .Where(t => t.User.Id == user.Id)
                 .Where(t => t.Text.Contains(partial))
                 .OfType<SavedItem>()
-                .Take(limit);
-
-            List<SavedItem> savedFiles = await savedFilesQuery.ToListAsync();
-            List<SavedItem> savedTexts = await savedTextsQuery.ToListAsync();
+                .Take(limit)
+                .ToListAsync();
 
             return savedFiles.Union(savedTexts);
         }
