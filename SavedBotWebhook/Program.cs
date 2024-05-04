@@ -7,7 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddUserSecrets<Bot>();
 
-AppDbContext dbContext = new AppDbContext(builder.Configuration[UserSecretKey.ConnectionString] ?? throw new UserSecretNotFoundException(UserSecretKey.ConnectionString));
+string dbProvider = builder.Configuration[UserSecretKey.DbProvider]
+?? throw new UserSecretNotFoundException(UserSecretKey.DbProvider);
+
+string connString = builder.Configuration[UserSecretKey.ConnectionString]
+?? throw new UserSecretNotFoundException(UserSecretKey.ConnectionString);
+
+AppDbContext dbContext = new AppDbContext(dbProvider, connString);
 
 Bot bot = Bot.BuildBot(builder.Configuration[UserSecretKey.BotKey] ?? throw new UserSecretNotFoundException(UserSecretKey.BotKey), dbContext);
 
