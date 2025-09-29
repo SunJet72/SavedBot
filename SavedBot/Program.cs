@@ -14,7 +14,7 @@ string connString = config[UserSecretKey.ConnectionString]
 ?? throw new UserSecretNotFoundException(UserSecretKey.ConnectionString);
 
 
-AppDbContext dbContext = new AppDbContext(dbProvider,connString);
+AppDbContext dbContext = new AppDbContext();
 
 Bot bot = Bot.BuildBot(config[UserSecretKey.BotKey] ?? throw new UserSecretNotFoundException(UserSecretKey.BotKey), dbContext);
 bot.StartPolling();

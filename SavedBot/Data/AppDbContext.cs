@@ -9,19 +9,26 @@ namespace SavedBot.Data
     public class AppDbContext : DbContext
     {
         public DbSet<TelegramUser> TelegramUsers { get; set; }
-        public DbSet<SavedItem> SavedItems { get; set; }
+        //public DbSet<SavedItem> SavedItems { get; set; }
 
         private string dbProvider, connString;
-        public DbSet<SavedFile> SavedFiles { get; set; }
+        //public DbSet<SavedFile> SavedFiles { get; set; }
 
-        public DbSet<SavedText> SavedTexts { get; set; }
+        //public DbSet<SavedText> SavedTexts { get; set; }
 
-        public AppDbContext(string _dbProvider,string _connString)
+        public AppDbContext()
+        {
+            dbProvider = UserSecretValue.SqlServer;
+            connString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=SavedBotDB;Integrated Security=True;Encrypt=False;";
+            Database.Migrate();
+        }
+
+        public AppDbContext(string _dbProvider, string _connString)
         { 
             dbProvider = _dbProvider;
             connString = _connString;
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
+
+            Database.Migrate();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -37,9 +44,6 @@ namespace SavedBot.Data
             {
                 builder.AddSimpleConsole();    // указываем наш провайдер логгирования
             }));
-        }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
         }
     }
 }

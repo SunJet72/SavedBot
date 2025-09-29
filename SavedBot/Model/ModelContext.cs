@@ -19,7 +19,7 @@ namespace SavedBot.Model
 
         public async Task AddItemAsync(SavedItem item)
         {
-            TelegramUser existingUser = await _dbContext.TelegramUsers.FindAsync(item.User.Id);
+            TelegramUser? existingUser = await _dbContext.TelegramUsers.FindAsync(item.User.Id);
             if (existingUser != null)
             {
                 item.User = existingUser;
@@ -30,11 +30,11 @@ namespace SavedBot.Model
             }
             if (item is SavedFile file)
             {
-                await _dbContext.SavedFiles.AddAsync(file);
+                //await _dbContext.SavedFiles.AddAsync(file);
             }
             else if (item is SavedText text)
             {
-                await _dbContext.SavedTexts.AddAsync(text);
+                //await _dbContext.SavedTexts.AddAsync(text);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -44,20 +44,20 @@ namespace SavedBot.Model
         {
             if (item is SavedFile file)
             {
-                SavedFile? fileToRemove = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileId == file.FileId);
+                //SavedFile? fileToRemove = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileUniqueId.Equals(file.FileUniqueId));
 
 #pragma warning disable CS8604 // Possible null reference argument.
-                _dbContext.SavedFiles.Attach(fileToRemove);
-                _dbContext.SavedFiles.Remove(fileToRemove);
+                //_dbContext.SavedFiles.Attach(fileToRemove);
+                //_dbContext.SavedFiles.Remove(fileToRemove);
 #pragma warning restore CS8604 // Possible null reference argument.
 
             }
             else if (item is SavedText text)
             {
-                SavedText? textToRemove = await _dbContext.SavedTexts.FirstOrDefaultAsync(x => x.Text == text.Text);
+                //SavedText? textToRemove = await _dbContext.SavedTexts.FirstOrDefaultAsync(x => x.Text.Equals(text.Text));
 #pragma warning disable CS8604 // Possible null reference argument.
-                _dbContext.SavedTexts.Attach(textToRemove);
-                _dbContext.SavedTexts.Remove(textToRemove);
+                //_dbContext.SavedTexts.Attach(textToRemove);
+                //_dbContext.SavedTexts.Remove(textToRemove);
 #pragma warning restore CS8604 // Possible null reference argument.
             }
 
@@ -66,19 +66,21 @@ namespace SavedBot.Model
 
         public async Task RenameFileAsync(SavedFile file)
         {
-                SavedFile? fileToRename = await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileId == file.FileId);
+            SavedFile? fileToRename = null;  //await _dbContext.SavedFiles.FirstOrDefaultAsync(x => x.FileUniqueId.Equals(file.FileUniqueId));
+            if (fileToRename is null) throw new SavedFileNotFoundException(file.FileUniqueId);
 
-                SavedFile? updatedFile = new SavedFile
-                {
-                    FileId = fileToRename.FileId,
-                    FileType = fileToRename.FileType,
-                    FileName = file.FileName
-                };
-                _dbContext.Entry(fileToRename).CurrentValues.SetValues(updatedFile);
+            SavedFile? updatedFile = new SavedFile() { 
+                Id = fileToRename.Id,
+                FileName = file.FileName,
+                FileId = fileToRename.FileId,
+                FileUniqueId = fileToRename.FileUniqueId,
+                FileType = fileToRename.FileType
+            };
+            _dbContext.Entry(fileToRename).CurrentValues.SetValues(updatedFile);
 
-                _dbContext.Entry(fileToRename).State = EntityState.Modified;
+            _dbContext.Entry(fileToRename).State = EntityState.Modified;
 
-                await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task ChangeLanguageAsync(TelegramUser user)
@@ -97,13 +99,13 @@ namespace SavedBot.Model
         {
             if (item is SavedFile file)
             {
-                SavedFile? fileToCheck = await _dbContext.SavedFiles.FirstOrDefaultAsync(f => f.FileId == file.FileId);
+                SavedFile? fileToCheck = null;//await _dbContext.SavedFiles.FirstOrDefaultAsync(f => f.FileUniqueId.Equals(file.FileUniqueId) && f.User.Id == file.User.Id);
 
                 return fileToCheck != null;
             }
             else if (item is SavedText text)
             {
-                SavedText? textToCheck = await _dbContext.SavedTexts.FirstOrDefaultAsync(t => t.Text.Equals(text.Text));
+                SavedText? textToCheck = null;//await _dbContext.SavedTexts.FirstOrDefaultAsync(t => t.Text.Equals(text.Text) && t.User.Id == text.User.Id);
 
                 return textToCheck != null;
             }
@@ -149,21 +151,24 @@ namespace SavedBot.Model
 
         public async Task<IEnumerable<SavedItem>> SearchAsync(TelegramUser user, string partial, int limit)
         {
-            List<SavedItem> savedFiles = await _dbContext.SavedFiles
-                .Where(f => f.User.Id == user.Id)
-                .Where(f => f.FileName.Contains(partial))
-                .OfType<SavedItem>()
-                .Take(limit)
-                .ToListAsync();
+            //list<saveditem> savedfiles = await _dbcontext.savedfiles
+            //    .where(f => f.user.id == user.id)
+            //    .where(f => f.filename.contains(partial))
+            //    .oftype<saveditem>()
+            //    .orderby(f => f.id)
+            //    .take(limit)
+            //    .tolistasync();
 
-            List<SavedItem> savedTexts = await _dbContext.SavedTexts
-                .Where(t => t.User.Id == user.Id)
-                .Where(t => t.Text.Contains(partial))
-                .OfType<SavedItem>()
-                .Take(limit)
-                .ToListAsync();
+            //list<saveditem> savedtexts = await _dbcontext.savedtexts
+            //    .where(t => t.user.id == user.id)
+            //    .where(t => t.text.contains(partial))
+            //    .oftype<saveditem>()
+            //    .orderby(f => f.id)
+            //    .take(limit)
+            //    .tolistasync();
 
-            return savedFiles.Union(savedTexts);
+            //return savedfiles.union(savedtexts);
+            return null;
         }
 
     }

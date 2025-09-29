@@ -26,7 +26,7 @@ namespace SavedBot.Model
         public long Id { get; set; }
         public long? ChatId { get; set; }
 
-        public IEnumerable<SavedItem>? SavedItems { get; set; }
+        //public IEnumerable<SavedItem>? SavedItems { get; set; }
         
         public string? LanguageCode { get; set; }
 

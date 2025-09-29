@@ -25,6 +25,12 @@ namespace SavedBot.Exceptions
         Exception($"Saved message with name {name} is not found");
 
     /// <summary>
+    /// Thrown if the saved message is not found by the specified name
+    /// </summary>
+    internal class SavedFileNotFoundException(string fileUniqueId) :
+        Exception($"Saved file with uniqueId {fileUniqueId} is not found");
+
+    /// <summary>
     /// Thrown if value with key given not found in user secrets
     /// </summary>
     public class UserSecretNotFoundException(string key) : 

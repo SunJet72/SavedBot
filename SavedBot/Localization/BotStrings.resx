@@ -138,6 +138,9 @@
   <data name="ErrorNotImplemented" xml:space="preserve">
     <value>You got me, I don't support this kind of messages yet :(</value>
   </data>
+  <data name="ErrorSaveTextNotImplemented" xml:space="preserve">
+    <value>Sorry, I was not taught how to save text yet :( Tell my creator if you really want that feature!</value>
+  </data>
   <data name="ErrorUnknownCommand" xml:space="preserve">
     <value>Unknown command</value>
   </data>

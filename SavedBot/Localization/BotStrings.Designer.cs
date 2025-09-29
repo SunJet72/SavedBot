@@ -124,6 +124,15 @@ namespace SavedBot.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sorry, I was not taught how to save text yet :( Tell my creator if you really want that feature!.
+        /// </summary>
+        internal static string ErrorSaveTextNotImplemented {
+            get {
+                return ResourceManager.GetString("ErrorSaveTextNotImplemented", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unknown command.
         /// </summary>
         internal static string ErrorUnknownCommand {

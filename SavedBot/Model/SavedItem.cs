@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SavedBot.Model
 {
-    public class SavedItem
+    public abstract class SavedItem
     {
         public SavedItem() { }
         public SavedItem(TelegramUser user) 
@@ -14,6 +14,7 @@ namespace SavedBot.Model
             User = user;
         }
         public int Id { get; set; }
+
         public TelegramUser User { get; set; }
     }
 }

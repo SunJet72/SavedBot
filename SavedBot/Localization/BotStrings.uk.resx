@@ -138,6 +138,10 @@
   <data name="ErrorNotImplemented" xml:space="preserve">
     <value>Добре, підловили, такий тип повідомлень я ще не підтримую :(</value>
   </data>
+  <data name="ErrorSaveTextNotImplemented" xml:space="preserve">
+    <value>Мене ще не навчили зберігати текст :( Скажіть моєму творцю, якщо ви дійсно хотіли би таку фічу!</value>
+    <comment> </comment>
+  </data>
   <data name="ErrorUnknownCommand" xml:space="preserve">
     <value>Невідома команда</value>
   </data>

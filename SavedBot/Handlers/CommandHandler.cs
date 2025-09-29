@@ -2,10 +2,12 @@
 using SavedBot.Chat;
 using SavedBot.Chat.Add.File;
 using SavedBot.Chat.Add.Text;
+using SavedBot.Chat.Cancel;
 using SavedBot.Chat.Edit;
 using SavedBot.Chat.RemoveText;
 using SavedBot.Exceptions;
 using SavedBot.Model;
+using Telegram.Bot.Types;
 
 namespace SavedBot.Handlers
 {
@@ -27,7 +29,13 @@ namespace SavedBot.Handlers
             {
                 _chats.Remove(addFileChat);
                 await _modelContext.AddItemAsync(
-                    new SavedFile(nameChat.Name, addFileChat.FileId, addFileChat.FileType, new TelegramUser(addFileChat.UserId)));
+                    new SavedFile() {
+                        FileName = nameChat.Name, 
+                        FileId = addFileChat.FileId, 
+                        FileUniqueId = addFileChat.FileUniqueId, 
+                        FileType = addFileChat.FileType, 
+                        User = new TelegramUser(addFileChat.UserId) 
+                    });
             }
             else throw new OngoingChatNotFoundException();
         }
@@ -61,8 +69,9 @@ namespace SavedBot.Handlers
         {
             if (_chats.FirstOrDefault((c) => c.UserId == removeFileChat.UserId) is EditFileOngoingChat editFileChat)
             {
+                if (editFileChat.MessageId != removeFileChat.MessageId) throw new OngoingChatNotFoundException();
                 _chats.Remove(editFileChat);
-                await _modelContext.RemoveItemAsync(new SavedFile() { FileId = editFileChat.FileId, User = new TelegramUser(editFileChat.UserId) });
+                await _modelContext.RemoveItemAsync(new SavedFile() { FileUniqueId = editFileChat.FileUniqueId, User = new TelegramUser(editFileChat.UserId) });
             }
             else throw new OngoingChatNotFoundException();
         }
@@ -70,8 +79,9 @@ namespace SavedBot.Handlers
         {
             if (_chats.FirstOrDefault((c) => c.UserId == renameFileChat.UserId) is EditFileOngoingChat editFileChat)
             {
+                if (editFileChat.MessageId != renameFileChat.MessageId) throw new OngoingChatNotFoundException();
                 _chats.Remove(editFileChat);
-                await _modelContext.RemoveItemAsync(new SavedFile() { FileId = editFileChat.FileId, User = new TelegramUser(editFileChat.UserId) });
+                await _modelContext.RenameFileAsync(new SavedFile() { FileName = renameFileChat.Name, FileUniqueId = editFileChat.FileUniqueId, User = new TelegramUser(editFileChat.UserId) });
             }
             else throw new OngoingChatNotFoundException();
         }
@@ -96,14 +106,31 @@ namespace SavedBot.Handlers
 
         #endregion
 
-        public bool IsNamed(long chatId)
+        #region Cancel
+        public async Task HandleAsync(CancelOngoingChat cancelChat)
         {
-            bool res = _chats.First((c) => c.UserId == chatId) switch
+            _chats.Remove(cancelChat);
+        }
+
+        #endregion
+
+        public bool IsNamingInProgress(long userId)
+        {
+            bool res = _chats.FirstOrDefault((c) => c.UserId == userId) switch
             {
                 AddFileOngoingChat or AddTextOngoingChat => true,
                 _ => false
             };
             return res;
+        }
+
+        public int? IsRenamingInProgress(long userId)
+        {
+            if(_chats.FirstOrDefault((c) => c.UserId == userId) is EditFileOngoingChat editFileChat)
+            {
+                return editFileChat.MessageId;
+            }
+            else return null;
         }
     }
 }
